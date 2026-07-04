@@ -155,6 +155,15 @@ section h2 {
   margin-bottom: 1.25rem;
 }
 
+#domains {
+  padding-bottom: 0;
+}
+
+#skills {
+  border-top: none;
+  padding-top: 2rem;
+}
+
 /* Skills */
 .skills-grid {
   display: grid;
