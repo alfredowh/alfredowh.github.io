@@ -22,8 +22,8 @@
 
 <header class="project-header">
   <div class="container">
-    <h1>Beer Brand Classification</h1>
-    <p class="meta">M.Eng. Electrical and Information Technology, OTH Regensburg · Course Project</p>
+    <h1>Beer Brand Classification using Deep Learning</h1>
+    <p class="meta">Deep Learning Challenge, OTH Regensburg · Winter Semester 2022/2023</p>
     <ul class="tag-list">
       <li class="tag">Image Classification</li>
       <li class="tag">Deep Learning</li>
@@ -36,8 +36,15 @@
   <div class="container">
     <h2>Overview</h2>
     <p>
-      Collected a dataset of 6,000+ images across 49 beer-brand classes and
-      trained an image classification model achieving roughly 98% accuracy.
+      As part of a Deep Learning Challenge at OTH Regensburg, our team developed 
+      a computer vision system to classify beer bottle images into <strong>49 German brewery categories</strong>, 
+      improving upon a baseline model with approximately 80% accuracy. I contributed 
+      to designing, training, and evaluating six model variants using transfer learning, 
+      comparing architectures including <strong>EfficientNetV2</strong>, <strong>InceptionV3</strong>, 
+      <strong>Inception-ResNetV2</strong>, <strong>ResNet-18</strong>, and an <strong>Xception + ResNet-50V2 ensemble</strong>. The training strategy combined 
+      feature extraction using frozen pre-trained backbones with selective layer fine-tuning, 
+      supported by data augmentation to address the limited dataset size. The best-performing model, 
+      based on <strong>EfficientNetV2M</strong>, achieved <strong>99.79% accuracy</strong> on the final test set.
     </p>
   </div>
 </section>
@@ -46,9 +53,22 @@
   <div class="container">
     <h2>Images</h2>
     <div class="gallery-grid">
-      <div class="gallery-slot">Add: sample beer-label dataset images</div>
-      <div class="gallery-slot">Add: confusion matrix / class examples</div>
-      <div class="gallery-slot">Add: live prediction demo screenshot</div>
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/beer-classification/beer.png"
+             alt="Beer classifications"
+             onclick="this.classList.toggle('zoomed')">
+      </div>
+      <div class="gallery-slot">
+        <figure>
+          <img src="../assets/images/projects/beer-classification/efficientnetv2.png"
+               alt="EfficientNetV2 model architecture"
+               onclick="this.classList.toggle('zoomed')">
+          <figcaption>
+            Source: 
+            <a href="https://arxiv.org/abs/2104.00298" target="_blank" rel="noopener">EfficientNetV2: Smaller Models and Faster Training</a>
+          </figcaption>
+        </figure>
+      </div>
     </div>
   </div>
 </section>
@@ -61,9 +81,25 @@
         <tr><th>Metric</th><th>Result</th><th>Notes</th></tr>
       </thead>
       <tbody>
-        <tr><td>Classes</td><td>49</td><td></td></tr>
-        <tr><td>Dataset size</td><td>6,000+ images</td><td></td></tr>
-        <tr><td>Accuracy</td><td>~98%</td><td>Add train/val/test split details</td></tr>
+        <tr><td>Classes</td><td>49</td><td>Beer brands / breweries</td></tr>
+        <tr><td>Dataset size</td><td>6,386 images</td><td>2,537 train · 649 val · 1,274 test · 1,926 final test</td></tr>
+        <tr><td>Baseline accuracy</td><td>~80%</td><td>Given starting point for the challenge</td></tr>
+        <tr><td>Best model accuracy</td><td>99.79%</td><td>EfficientNetV2M, final test set</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Model comparison</h3>
+    <table class="eval-table">
+      <thead>
+        <tr><th>Model</th><th>Base architecture</th><th>Parameters</th><th>Validation</th><th>Test</th><th>Final test</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>EfficientNetV2S</td><td>20.4M</td><td>99.38%</td><td>99.45%</td><td>99.38%</td></tr>
+        <tr><td>2</td><td>EfficientNetV2M</td><td>53.2M</td><td>99.54%</td><td>99.76%</td><td><strong>99.79%</strong></td></tr>
+        <tr><td>3</td><td>Inception-ResNetV2</td><td>54.4M</td><td>95.84%</td><td>97.10%</td><td>97.92%</td></tr>
+        <tr><td>4</td><td>Xception + ResNet-50V2 (ensemble)</td><td>44.4M</td><td>91.68%</td><td>91.60%</td><td>not submitted</td></tr>
+        <tr><td>5</td><td>ResNet-18</td><td>11.2M</td><td>99.06%</td><td>98.73%</td><td>97.69%</td></tr>
+        <tr><td>6</td><td>InceptionV3</td><td>21.9M</td><td>96.92%</td><td>96%</td><td>96.11%</td></tr>
       </tbody>
     </table>
   </div>
@@ -72,10 +108,24 @@
 <section>
   <div class="container">
     <h2>Notes</h2>
-    <div class="placeholder-block">
-      Add details on data collection method, model architecture used, and
-      any class-imbalance or generalization challenges encountered.
-    </div>
+    <ul>
+      <li>
+        <strong>Data collection:</strong> the dataset was built by photographing beer
+        bottles across varied backgrounds, lighting conditions, perspectives, and
+        beer types (e.g. pils, wheat beer) to increase visual variance per class.
+      </li>
+      <li>
+        <strong>Training approach:</strong> Feature extraction with a frozen pre-trained base and a
+        new classifier head and fine-tuning of selected layers with a
+        lower learning rate. Data augmentation (random rotation, translation, zoom,
+        horizontal flip/crop) helped compensate for the relatively small dataset.
+      </li>
+      <li>
+        <strong>Architecture comparison:</strong> EfficientNetV2-based models
+        outperformed Inception-ResNetV2, ResNet-18, and InceptionV3, consistent
+        with EfficientNetV2's accuracy/efficiency trade-off from compound scaling.
+      </li>
+    </ul>
   </div>
 </section>
 
