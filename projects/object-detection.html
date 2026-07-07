@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Object Detection for Mobile Robots — Alfredo Wijaya Hardjoprawiro</title>
 <link rel="stylesheet" href="../css/style.css">
+<style>
+  /* Show full evaluation charts (no cropping) instead of the site-wide cover-fit gallery style. */
+  .eval-gallery .gallery-slot img {
+    object-fit: contain;
+    background: var(--bg-alt);
+  }
+</style>
 </head>
 <body>
 
@@ -60,18 +67,121 @@
 <section>
   <div class="container">
     <h2>Evaluation</h2>
+    <p>
+      YOLOv7-Tiny was benchmarked against Vision LSTM and DETR, both developed by
+      other students in the same course project, averaged over 3 training runs.
+    </p>
+    
+
+    <h3>Accuracy on KITTI (8 classes)</h3>
     <table class="eval-table">
       <thead>
-        <tr><th>Metric</th><th>Result</th><th>Notes</th></tr>
+        <tr><th>Model</th><th>mAP@.5</th><th>Precision</th><th>Recall</th></tr>
       </thead>
       <tbody>
-        <tr><td>mAP / accuracy</td><td>TBD</td><td>Add dataset and split used</td></tr>
-        <tr><td>Inference speed</td><td>TBD</td><td>Add hardware used on the robot</td></tr>
+        <tr><td><strong>YOLOv7-Tiny</strong></td><td><strong>70.88% ± 0.13</strong></td><td><strong>68.92% ± 0.08</strong></td><td><strong>75.66% ± 0.12</strong></td></tr>
+        <tr><td>Vision LSTM</td><td>39.26% ± 0.13</td><td>55.65% ± 0.12</td><td>49.19% ± 0.12</td></tr>
+        <tr><td>DETR</td><td>21.03% ± 0.24</td><td>25.37% ± 0.25</td><td>30.57% ± 0.30</td></tr>
       </tbody>
     </table>
+    <div class="gallery-grid eval-gallery">
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/crossmodel_kitti_ap.png" alt="Average precision per class on KITTI across YOLOv7, Vision LSTM and DETR" onclick="this.classList.toggle('zoomed')">
+      </div>
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/crossmodel_kitti_precision_recall.png" alt="Precision and recall per class on KITTI across YOLOv7, Vision LSTM and DETR" onclick="this.classList.toggle('zoomed')">
+      </div>
+    </div>
+
+    <h3>Accuracy on custom robot dataset (Car, Pedestrian, Truck)</h3>
+    <p>
+      Accuracy dropped considerably when transferring to the custom dataset generated in
+      <a href="ros2-data-generation.html">the simulation-based evaluation project</a>, reflecting the
+      domain gap between KITTI's real-world driving scenes and the simulated mobile-robot environment.
+    </p>
+    <table class="eval-table">
+      <thead>
+        <tr><th>Model</th><th>mAP@.5</th><th>Precision</th><th>Recall</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>YOLOv7-Tiny</strong></td><td><strong>39.45% ± 0.24</strong></td><td><strong>69.27% ± 0.14</strong></td><td><strong>43.47% ± 0.22</strong></td></tr>
+        <tr><td>Vision LSTM</td><td>7.31% ± 0.03</td><td>29.11% ± 0.04</td><td>15.89% ± 0.05</td></tr>
+      </tbody>
+    </table>
+    <div class="gallery-grid eval-gallery">
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/crossmodel_custom_ap.png" alt="Average precision per class on the custom dataset for YOLOv7 and Vision LSTM" onclick="this.classList.toggle('zoomed')">
+      </div>
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/crossmodel_custom_precision_recall.png" alt="Precision and recall per class on the custom dataset for YOLOv7 and Vision LSTM" onclick="this.classList.toggle('zoomed')">
+      </div>
+    </div>
+
+    <h3>Inference speed &amp; model size</h3>
+    <p>
+      YOLOv7-Tiny was also by far the most efficient model, making it the only
+      candidate suitable for real-time inference on robot-grade hardware.
+    </p>
+    <table class="eval-table">
+      <thead>
+        <tr><th>Model</th><th>GPU (RTX 3050 Laptop)</th><th>CPU (i7-11800H)</th><th>Parameters</th><th>Memory</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>YOLOv7-Tiny</strong></td><td><strong>0.012 s</strong></td><td>0.820 s</td><td><strong>6.03 M</strong></td><td><strong>12.07 MB</strong></td></tr>
+        <tr><td>Vision LSTM</td><td>0.054 s</td><td>0.830 s</td><td>92.68 M</td><td>370.56 MB</td></tr>
+        <tr><td>DETR</td><td>0.034 s</td><td><strong>0.158 s</strong></td><td>41.53 M</td><td>166.00 MB</td></tr>
+      </tbody>
+    </table>
+    <div class="gallery-grid eval-gallery">
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/crossmodel_inference_speed.png" alt="Inference time per model on GPU and CPU" onclick="this.classList.toggle('zoomed')">
+      </div>
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/crossmodel_model_size.png" alt="Parameter count and memory usage per model" onclick="this.classList.toggle('zoomed')">
+      </div>
+    </div>
+
+    <p>
+      Overall, YOLOv7-Tiny achieved the best trade-off between accuracy and efficiency,
+      outperforming Vision LSTM and DETR on KITTI while using roughly 7–15x fewer
+      parameters and running up to 4.5x faster on GPU, making it the most practical
+      choice for onboard deployment on a mobile robot.
+    </p>
+
+    <h3>Effect of fine-tuning (COCO-pretrained vs. KITTI-finetuned)</h3>
+    <p>
+      To isolate the effect of fine-tuning, the COCO-pretrained YOLOv7-Tiny weights
+      were compared directly against the KITTI-finetuned weights on the 4 classes
+      common to both datasets (Car, Pedestrian, Truck, Tram).
+    </p>
+    <table class="eval-table">
+      <thead>
+        <tr><th>Weights</th><th>mAP@.5</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Finetuned on KITTI</strong></td><td><strong>79.31% ± 0.11</strong></td></tr>
+        <tr><td>Pretrained on COCO only</td><td>36.49% ± 0.23</td></tr>
+      </tbody>
+    </table>
+    <div class="gallery-grid eval-gallery">
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/yolo_pretrained_finetuned_ap.png" alt="Average precision per class for COCO-pretrained vs KITTI-finetuned YOLOv7-Tiny" onclick="this.classList.toggle('zoomed')">
+      </div>
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/yolo_pretrained_finetuned_precision_recall.png" alt="Precision and recall per class for COCO-pretrained vs KITTI-finetuned YOLOv7-Tiny" onclick="this.classList.toggle('zoomed')">
+      </div>
+    </div>
+    <p>
+      Fine-tuning on KITTI more than doubled mAP@.5 (36.49% → 79.31%) and improved
+      precision and recall across all 4 shared classes, with the largest gains on
+      Truck and Tram — classes that are underrepresented or defined differently in
+      COCO — confirming that fine-tuning on domain-specific data was essential
+      rather than relying on COCO-pretrained weights alone.
+    </p>
   </div>
 </section>
 
+<!--
 <section>
   <div class="container">
     <h2>Notes</h2>
@@ -81,6 +191,7 @@
     </div>
   </div>
 </section>
+-->
 
 <footer class="site-footer">
   <div class="container">
