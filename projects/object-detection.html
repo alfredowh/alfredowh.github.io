@@ -43,9 +43,9 @@
   <div class="container">
     <h2>Overview</h2>
     <p>
-      Train YOLOv7-Tiny for mobile robot in traffic scenarios under varying environmental conditions.
+      Train <a href="https://arxiv.org/abs/2207.02696" target="_blank" rel="noopener">YOLOv7-Tiny</a> for mobile robot in traffic scenarios under varying environmental conditions.
       The model is trained on the KITTI dataset, which is a widely used benchmark dataset for autonomous driving and object detection tasks.
-      The evaluation of the model is performed on a custom dataset generated from <a href="projects/ros2-data-generation.html">this project</a>, 
+      The evaluation of the model is performed on a custom dataset generated from <a href="./ros2-data-generation.html">this project</a>, 
       which simulates the specific environment and conditions encountered by mobile robots, including varying lighting and weather conditions.
       The evaluation focused on assessing the model's performance in terms of accuracy, inference speed, and robustness under varying environmental conditions.
       YOLOv7-Tiny will be benchmarked against DETR and Vision LSTM, which developed by other students in the same course project.
@@ -58,8 +58,28 @@
   <div class="container">
     <h2>Images</h2>
     <div class="gallery-grid">
-      <div class="gallery-slot">Add: robot platform / setup photo</div>
-      <div class="gallery-slot">Add: detection output examples</div>
+      <div class="gallery-slot">
+        <figure>
+          <img src="../assets/images/projects/object-detection/yolov7.png"
+               alt="YOLOv7-Tiny model architecture"
+               onclick="this.classList.toggle('zoomed')">
+          <figcaption>
+            Source: 
+            <a href="https://github.com/open-mmlab/mmyolo/tree/main/configs/yolov7" target="_blank" rel="noopener">open-mmlab YOLOv7</a>
+          </figcaption>
+        </figure>
+      </div>
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/kitti_dataset.png"
+             alt="KITTI dataset examples"
+             onclick="this.classList.toggle('zoomed')">
+      </div>
+      <div class="gallery-slot">
+        <img src="../assets/images/projects/object-detection/custom_dataset.png"
+             alt="Custom dataset examples"
+             onclick="this.classList.toggle('zoomed')">
+      </div>
+    </div>
     </div>
   </div>
 </section>
