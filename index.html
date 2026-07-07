@@ -22,40 +22,28 @@
 </nav>
 
 <header class="hero">
-  <div class="container">
-    <h1>Alfredo Wijaya Hardjoprawiro</h1>
-    <p class="tagline">
-      Master's student in Artificial Intelligence with a background in machine learning 
-      and deep learning, particularly in computer vision, autonomous systems, and robotics.
-    </p>
-    <div class="links">
-      <a class="btn primary" href="projects.html">View Projects</a>
-      <a class="btn" href="https://github.com/alfredowh" target="_blank" rel="noopener">GitHub</a>
-      <a class="btn" href="https://www.linkedin.com/in/alfredo-wh" target="_blank" rel="noopener">LinkedIn</a>
-    </div>
-  </div>
-</header>
-
-<section id="domains">
-  <div class="container">
-    <h2>Domains</h2>
-    <div class="domains-grid">
-      <ul class="tag-list">
+  <div class="container hero-grid">
+    <div class="hero-main">
+      <h1>Alfredo Wijaya Hardjoprawiro</h1>
+      <p class="tagline">
+        Master's student in Artificial Intelligence with a background in machine learning
+        and deep learning, particularly in computer vision, autonomous systems, and robotics.
+      </p>
+      <ul class="tag-list domains-list">
         <li class="tag">Embodied AI</li>
         <li class="tag">Robot Learning</li>
         <li class="tag">Computer Vision</li>
         <li class="tag">Machine Learning</li>
         <li class="tag">Deep Learning</li>
       </ul>
+      <div class="links">
+        <a class="btn primary" href="projects.html">View Projects</a>
+        <a class="btn" href="https://github.com/alfredowh" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn" href="https://www.linkedin.com/in/alfredo-wh" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
     </div>
-  </div>
-</section>
-
-<section id="skills">
-  <div class="container">
-    <h2>Skills</h2>
-    <div class="skills-grid">
-      <div>
+    <div class="hero-skills">
+      <div class="skill-group">
         <h3>Programming</h3>
         <ul class="tag-list">
           <li class="tag">Python</li>
@@ -63,7 +51,7 @@
           <li class="tag">C/C++</li>
         </ul>
       </div>
-      <div>
+      <div class="skill-group">
         <h3>Libraries &amp; Frameworks</h3>
         <ul class="tag-list">
           <li class="tag">PyTorch</li>
@@ -72,7 +60,7 @@
           <li class="tag">OpenAI Gym</li>
         </ul>
       </div>
-      <div>
+      <div class="skill-group">
         <h3>Tools &amp; Platforms</h3>
         <ul class="tag-list">
           <li class="tag">ROS2</li>
@@ -91,44 +79,48 @@
       </div>
     </div>
   </div>
-</section>
+</header>
 
 <section id="featured-projects">
   <div class="container">
     <h2>Featured Projects</h2>
     <div class="project-grid">
-
       <div class="card">
-        <div class="card-thumb">Image placeholder</div>
+        <div class="card-thumb"><a href="projects/ros2-data-generation.html"><img src="assets/images/projects/ros2-data-generation/gazebo_bbox.png" alt="Gazebo scene with object detection bounding boxes"></a></div>
         <div class="card-body">
-          <h3>Radar-Camera Sensor Fusion for Road-User Detection</h3>
-          <p>AI-based fusion of 3D radar point clouds and camera images, optimized
-             for deployment on an edge device; +~7% average precision.</p>
+          <h3>Generation of Simulation Datasets for Object Detection Evaluation</h3>
+            <p>Simulation-based object detection evaluation dataset (3,000+ objects) using 
+              <strong>ROS 2</strong> and <strong>Gazebo</strong> with semi-automated labeling across 
+              varying traffic and weather conditions
+            </p>
           <div class="card-links">
-            <a href="projects/sensor-fusion.html">Details →</a>
+            <a href="projects/ros2-data-generation.html">Details →</a>
+            <a href="https://github.com/alfredowh/ros2-object-detection" target="_blank" rel="noopener">GitHub</a>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-thumb">Image placeholder</div>
+        <div class="card-thumb"><a href="projects/object-detection.html">Image placeholder</a></div>
         <div class="card-body">
-          <h3>Model Compression of MobileNetV2</h3>
-          <p>Pruning, quantization, and knowledge distillation to shrink a
-             detection model for resource-constrained deployment.</p>
+          <h3>Object Detection for Mobile Robots</h3>
+          <p>Train YOLOv7-Tiny for mobile robot in traffic scenarios under varying environmental conditions.</p>
           <div class="card-links">
-            <a href="projects/model-compression.html">Details →</a>
-            <a href="https://github.com/alfredowh/model-compression" target="_blank" rel="noopener">GitHub</a>
+            <a href="projects/object-detection.html">Details →</a>
+            <a href="https://github.com/alfredowh/object-detection" target="_blank" rel="noopener">GitHub</a>
           </div>
         </div>
       </div>
 
+      
       <div class="card">
-        <div class="card-thumb">Image placeholder</div>
+        <div class="card-thumb"><a href="projects/beer-classification.html"><img src="assets/images/projects/beer-classification/beer.png" alt="Beer classifications"></a></div>
         <div class="card-body">
-          <h3>Beer Brand Classification</h3>
-          <p>6,000+ image dataset across 49 beer-brand classes; deep learning
-             classifier reaching ~98% accuracy.</p>
+          <h3>Beer Brand Classification using Deep Learning</h3>
+          <p>Deep learning model for classifying beer bottles into 49 German brewery categories. 
+              Achieved <strong>99.79%</strong> accuracy on the final test set using <strong>EfficientNetV2M</strong> with 
+              transfer learning and data augmentation.</p>
+          </p>
           <div class="card-links">
             <a href="projects/beer-classification.html">Details →</a>
           </div>
@@ -148,36 +140,36 @@
     <div class="timeline-item">
       <h3>Schaeffler Technologies AG &amp; Co. KG — Robotics and AI | Internship &amp; Thesis</h3>
       <p class="meta">02/2026 – Now · Herzogenaurach, Germany</p>
-      <!-- <p>Enabling embodied AI for dual-arm manipulation via Vision-Language-Action
+      <p>Enabling embodied AI for dual-arm manipulation via Vision-Language-Action
          (VLA) robot foundation models, from simulation and data generation
-         through sim-to-real transfer and real-hardware evaluation.</p> -->
+         through sim-to-real transfer and real-hardware evaluation.</p>
     </div>
 
     <div class="timeline-item">
       <h3>TRUMPF SE + Co. KG — Data and AI | Internship</h3>
       <p class="meta">04/2025 – 01/2026 · Ditzingen, Germany</p>
-      <!-- <p>Geometry retrieval systems for machine tools using self-supervised
+      <p>Geometry retrieval systems for machine tools using self-supervised
          representation learning; built a workflow generating 73,000+
-         multi-representation geometric datasets.</p> -->
+         multi-representation geometric datasets.</p>
     </div>
 
     <div class="timeline-item">
       <h3>CARISSMA Automotive Research Institute — Vehicle Safety | Student Research Assistant</h3>
       <p class="meta">03/2024 – 03/2025 · Ingolstadt, Germany</p>
-      <!-- <p>AI-based radar-camera sensor fusion for road-user detection, optimized
-         for edge deployment; see <a href="projects/sensor-fusion.html">project details</a>.</p> -->
+      <p>AI-based radar-camera sensor fusion for road-user detection, optimized
+         for edge deployment; see <a href="projects/sensor-fusion.html">project details</a>.</p>
     </div>
 
     <div class="timeline-item">
       <h3>Bayernwerk Netz GmbH — Process Automation | Working Student</h3>
       <p class="meta">10/2022 – 07/2023 · Regensburg, Germany</p>
-      <!-- <p>Improved time efficiency by ~80% using OCR combined with object
-         detection for robotic process automation of digital workflows.</p>-->
+      <p>Improved time efficiency by ~80% using OCR combined with object
+         detection for robotic process automation of digital workflows.</p>
     </div>
     <div class="timeline-item">
       <h3>RENK Test System GmbH — Software Development | Internship, Thesis &amp; Working Student</h3>
       <p class="meta">09/2020 – 09/2022 · Augsburg, Germany</p>
-      <!-- <p>Designed and implemented automation systems for test benches (Beckhoff TwinCAT / EtherCAT, PLC control) and standardized automated report generation.</p> -->
+      <p>Designed and implemented automation systems for test benches (Beckhoff TwinCAT / EtherCAT, PLC control) and standardized automated report generation.</p>
     </div>
   </div>
 </section>
