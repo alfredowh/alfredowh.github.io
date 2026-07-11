@@ -5,6 +5,59 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ROS2/Gazebo Data Generation — Alfredo Wijaya Hardjoprawiro</title>
 <link rel="stylesheet" href="../css/style.css">
+<style>
+  /* Scoped to this page: small, centered, zoomable inline figures. */
+  .inline-figure {
+    --inline-figure-width: 480px;
+    max-width: var(--inline-figure-width);
+    margin: 1.5rem auto;
+    text-align: center;
+  }
+  .inline-figure img,
+  .inline-figure video {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+  }
+  .inline-figure img {
+    cursor: zoom-in;
+  }
+  .inline-figure img.zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: auto;
+    max-width: 90vw;
+    max-height: 90vh;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    cursor: zoom-out;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+  }
+  .inline-figure figcaption {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+  }
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--stack-cols, 2), 1fr);
+    gap: 1.5rem;
+    align-items: start;
+    margin: 1.5rem 0;
+  }
+  .stack-grid .inline-figure {
+    max-width: none;
+    width: 100%;
+    margin: 0 auto;
+  }
+  @media (max-width: 640px) {
+    .stack-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 </head>
 <body>
 
@@ -61,30 +114,28 @@
 <section>
   <div class="container">
     <h2>Images</h2>
-    <div class="gallery-grid">
-      <!-- <div class="gallery-slot">
-        <img src="../assets/images/projects/simulation-data-generation/frame_0002.0s.jpg"
-             alt="Gazebo traffic simulation scene"
-             onclick="this.classList.toggle('zoomed')">
-      </div> -->
-      <div class="gallery-slot">
+    <div class="stack-grid">
+      <figure class="inline-figure">
+        <video controls>
+          <source src="../assets/images/projects/simulation-data-generation/gazebo_scene.mp4" type="video/mp4">
+        </video>
+        <figcaption>Gazebo traffic simulation scene</figcaption>
+      </figure>
+
+      <figure class="inline-figure">
         <img src="../assets/images/projects/simulation-data-generation/gazebo_bbox.png"
              alt="Object detection dataset sample image"
              onclick="this.classList.toggle('zoomed')">
-      </div>
-
-      <div class="gallery-slot">
-        <img src="../assets/images/projects/simulation-data-generation/ros2_node.png"
-             alt="ROS computation graph"
-             onclick="this.classList.toggle('zoomed')">
-      </div>
-
-      <div class="gallery-slot">
-        <video controls width="100%">
-          <source src="../assets/images/projects/simulation-data-generation/gazebo_scene.mp4" type="video/mp4">
-        </video>
-      </div>
+        <figcaption>Object detection dataset sample image</figcaption>
+      </figure>
     </div>
+
+    <figure class="inline-figure" style="--inline-figure-width: 800px;">
+      <img src="../assets/images/projects/simulation-data-generation/ros2_node.png"
+           alt="ROS computation graph"
+           onclick="this.classList.toggle('zoomed')">
+      <figcaption>ROS computation graph</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -144,7 +195,7 @@
   </div>
 </section>
 
-
+<!--
 <section>
   <div class="container">
     <h2>Notes</h2>

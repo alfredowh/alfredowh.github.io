@@ -3,8 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Radar-Camera Sensor Fusion — Alfredo Wijaya Hardjoprawiro</title>
+<title>Radar-Camera Sensor Fusion with Tiny YOLOv7 — Alfredo Wijaya Hardjoprawiro</title>
 <link rel="stylesheet" href="../css/style.css">
+<style>
+  .inline-figure {
+    --inline-figure-width: 380px;
+    width: 100%;
+    max-width: var(--inline-figure-width);
+    margin: 1.5rem auto;
+    text-align: center;
+  }
+  .inline-figure img {
+    width: 100%;
+    height: auto;
+    cursor: zoom-in;
+    border-radius: 6px;
+  }
+  .inline-figure img.zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: auto;
+    max-width: 90vw;
+    max-height: 90vh;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    cursor: zoom-out;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+  }
+  .inline-figure figcaption {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+  }
+  .stack-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+  }
+  .stack-grid .inline-figure {
+    /* fills the grid cell by default; set an inline style="--inline-figure-width: NNNpx"
+       on an individual <figure> to cap its width instead. */
+    --inline-figure-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .stack-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .text-figure-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin: 1rem 0 1.5rem;
+  }
+  .text-figure-row ul {
+    flex: 1;
+    margin: 0;
+    min-width: 0;
+  }
+  .text-figure-row .inline-figure {
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .equal-figure img {
+    aspect-ratio: 4.3 / 3;
+    object-fit: cover;
+  }
+  .gif-figure {
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .gif-figure img {
+    transform: scale(1);
+  }
+  @media (max-width: 640px) {
+    .stack-grid {
+      grid-template-columns: 1fr;
+    }
+    .text-figure-row {
+      flex-direction: column;
+    }
+  }
+  section p + ul,
+  section h3 + ul {
+    margin-top: 0.5rem;
+  }
+</style>
 </head>
 <body>
 
@@ -22,12 +111,12 @@
 
 <header class="project-header">
   <div class="container">
-    <h1>Radar-Camera Sensor Fusion for Road-User Detection</h1>
+    <h1>Sensor Fusion of Radar and Camera for Road User Detection</h1>
     <p class="meta">CARISSMA Automotive Research Institute · Student Research Assistant · 03/2024 – 03/2025</p>
     <ul class="tag-list">
       <li class="tag">Sensor Fusion</li>
-      <li class="tag">Object Detection</li>
-      <li class="tag">Edge Deployment</li>
+      <li class="tag">FMCW Radar</li>
+      <li class="tag">Edge Deployment (Jetson)</li>
       <li class="tag">Python</li>
       <li class="tag">PyTorch</li>
     </ul>
@@ -37,49 +126,156 @@
 <section>
   <div class="container">
     <h2>Overview</h2>
-    <p>
-      Transformed and optimized radar–camera datasets for AI-based sensor
-      fusion (3D radar point clouds + image data), resolving inconsistencies
-      in the source data. Implemented sensor fusion combining radar and
-      camera data for object detection and monocular depth estimation, and
-      optimized the resulting model for deployment on an edge device.
-    </p>
+    <ul>
+      <li><strong>Goal:</strong> fuse a 77 GHz FMCW radar with an RGB camera so road-user detection (car, pedestrian, cyclist, truck) stays robust in fog, rain, and low light — exactly where camera-only detectors degrade sharply.</li>
+      <li><strong>Model:</strong> <a href="https://arxiv.org/abs/2207.02696" target="_blank" rel="noopener">Tiny YOLOv7</a>, chosen so the fused model still fits on an <strong>NVIDIA Jetson</strong> for onboard, real-time inference.</li>
+      <li><strong>Challenge:</strong> radar is sparse and texture-less, so the gain from fusing it in has to survive real deployment constraints — edge-sized model, real weather conditions.</li>
+    </ul>
   </div>
 </section>
 
 <section>
   <div class="container">
-    <h2>Images</h2>
-    <div class="gallery-grid">
-      <div class="gallery-slot">Add: pipeline / architecture diagram</div>
-      <div class="gallery-slot">Add: sample radar-camera fusion visualization</div>
-      <div class="gallery-slot">Add: detection results (varied weather)</div>
+    <h2>Why Fuse Radar and Camera?</h2>
+    <ul>
+      <li><strong>Radar:</strong> directly measures distance and radial velocity for every return, and its longer wavelength shrugs off fog, rain, and darkness — but returns are sparse and carry no texture or shape.</li>
+      <li><strong>Camera:</strong> dense, semantically rich, cheap — but purely passive and visibility-limited, so accuracy collapses exactly when radar stays reliable.</li>
+      <li><strong>Idea:</strong> let the camera supply appearance and the radar supply distance/velocity + weather robustness, so the fused model degrades more gracefully than either sensor alone.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Early Fusion: Projecting Radar onto the Image</h2>
+    <div class="text-figure-row">
+      <ul>
+        <li><strong>Dataset:</strong> <a href="https://github.com/tudelft-iv/view-of-delft-dataset" target="_blank" rel="noopener">View of Delft</a>, whose radar unit is the same 77 GHz FMCW automotive radar family as the test rig above.</li>
+        <li><strong>Projection:</strong> each 3D radar point is projected onto the image plane via the calibrated extrinsics.</li>
+        <li><strong>Early fusion:</strong> radar channels (e.g. distance, velocity) sit stacked alongside the RGB channels as direct input to <a href="https://arxiv.org/abs/2207.02696" target="_blank" rel="noopener">Tiny YOLOv7</a>.</li>
+      </ul>
+      <figure class="inline-figure" style="--inline-figure-width: 340px;">
+        <img src="../assets/images/projects/sensor-fusion/vod-fusion.jpg"
+             alt="Radar points projected onto a View of Delft camera frame"
+             onclick="this.classList.toggle('zoomed')">
+        <figcaption>Radar point cloud projected onto the camera frame</figcaption>
+      </figure>
     </div>
   </div>
 </section>
 
 <section>
   <div class="container">
-    <h2>Evaluation</h2>
-    <table class="eval-table">
-      <thead>
-        <tr><th>Metric</th><th>Result</th><th>Notes</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Average Precision (AP)</td><td>+~7% vs. baseline</td><td>Fill in exact baseline/model and dataset split</td></tr>
-        <tr><td>Edge inference latency</td><td>TBD</td><td>Add measured latency on target hardware</td></tr>
-        <tr><td>Weather conditions tested</td><td>TBD</td><td>List simulated conditions and per-condition robustness</td></tr>
-      </tbody>
-    </table>
+    <h2>Experiments</h2>
+    <ul>
+      <li><strong>Channel combinations</strong> — RGB vs. RGB stacked with different radar channels (distance, radial velocity, absolute/ego-motion-compensated velocity), down to a compact 2-channel input of 1 grayscale/RGB channel + 1 radar-distance channel.</li>
+      <li><strong>Point-cloud dilation</strong> — a projected radar point covers only a few pixels; dilating and scaling up each point's footprint before stacking makes the sparse radar channel easier for the CNN to pick up.</li>
+      <li><strong>Elevation augmentation</strong> — jittering each radar point's projected position vertically to counter radar's coarse elevation resolution and calibration/projection noise, densifying the radar channel around each true detection.</li>
+      <li><strong>Multi-sweep accumulation</strong> — stacking multiple radar sweeps (vs. a single sweep) to densify the point cloud before projection.</li>
+    </ul>
   </div>
 </section>
 
 <section>
   <div class="container">
-    <h2>Notes</h2>
-    <div class="placeholder-block">
-      Add lessons learned, challenges (e.g. radar-camera calibration/alignment
-      issues), and future work here.
+    <h2>Evaluation: Robustness in Fog</h2>
+    <p>
+      All variants benchmarked against RGB-only Tiny YOLOv7 across four
+      simulated conditions — clear, light fog, medium fog, strong fog — per
+      class (car, pedestrian, cyclist, truck).
+    </p>
+    <div class="stack-grid">
+      <div class="stack-col">
+        <figure class="inline-figure" style="--inline-figure-width: 440px;">
+          <img src="../assets/images/projects/sensor-fusion/models-map50-clear.png" alt="mAP@.5 per class, clear condition, all model variants" onclick="this.classList.toggle('zoomed')">
+          <figcaption>Clear</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure" style="--inline-figure-width: 440px;">
+          <img src="../assets/images/projects/sensor-fusion/models-map50-foglight.png" alt="mAP@.5 per class, light fog condition, all model variants" onclick="this.classList.toggle('zoomed')">
+          <figcaption>Light fog</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure" style="--inline-figure-width: 440px;">
+          <img src="../assets/images/projects/sensor-fusion/models-map50-fogmedium.png" alt="mAP@.5 per class, medium fog condition, all model variants" onclick="this.classList.toggle('zoomed')">
+          <figcaption>Medium fog</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure" style="--inline-figure-width: 440px;">
+          <img src="../assets/images/projects/sensor-fusion/models-map50-fogstrong.png" alt="mAP@.5 per class, strong fog condition, all model variants" onclick="this.classList.toggle('zoomed')">
+          <figcaption>Strong fog</figcaption>
+        </figure>
+      </div>
+    </div>
+    <ul>
+      <li><strong>Clear:</strong> RGB-only is competitive; fusion variants add little.</li>
+      <li><strong>As fog thickens:</strong> most fusion variants (plain fusion, dilation, absolute-velocity) fall to roughly RGB-level or below — extra radar channels alone don't guarantee a gain.</li>
+      <li><strong>Fusion + elevation augmentation</strong> is the consistent exception, pulling ahead across classes as conditions worsen, most visibly on cyclist and truck.</li>
+    </ul>
+
+    <h3>Best configuration vs. RGB-only</h3>
+    <p>
+      Best-performing setup — <strong>1 RGB channel + 1 radar-distance
+      channel, with elevation augmentation</strong> — tracked against the
+      RGB-only baseline across all four conditions:
+    </p>
+    <div class="stack-grid" style="grid-template-columns: repeat(2, 340px); justify-content: center; gap: 1rem;">
+      <div class="stack-col">
+        <figure class="inline-figure" style="--inline-figure-width: 340px;">
+          <img src="../assets/images/projects/sensor-fusion/best-map.png" alt="mAP across fog conditions, RGB vs. best fusion model" onclick="this.classList.toggle('zoomed')">
+          <figcaption>mAP</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure" style="--inline-figure-width: 340px;">
+          <img src="../assets/images/projects/sensor-fusion/best-map50.png" alt="mAP@.5 across fog conditions, RGB vs. best fusion model" onclick="this.classList.toggle('zoomed')">
+          <figcaption>mAP@50</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure" style="--inline-figure-width: 340px;">
+          <img src="../assets/images/projects/sensor-fusion/best-precision.png" alt="Precision across fog conditions, RGB vs. best fusion model" onclick="this.classList.toggle('zoomed')">
+          <figcaption>Precision</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure" style="--inline-figure-width: 340px;">
+          <img src="../assets/images/projects/sensor-fusion/best-recall.png" alt="Recall across fog conditions, RGB vs. best fusion model" onclick="this.classList.toggle('zoomed')">
+          <figcaption>Recall</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Test Setup</h2>
+    <ul>
+      <li>The model trained on the View of Delft dataset is deployed on an NVIDIA Jetson-powered radar–camera test rig for real-time road user detection.</li>
+    </ul>
+    <div class="stack-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <figure class="inline-figure equal-figure">
+        <img src="../assets/images/projects/sensor-fusion/testing-scene.png"
+             alt="Radar-camera test rig"
+             onclick="this.classList.toggle('zoomed')">
+        <figcaption>Radar-camera test rig</figcaption>
+      </figure>
+      <figure class="inline-figure equal-figure gif-figure">
+        <img src="../assets/images/projects/sensor-fusion/testing-range-doppler-map.gif"
+             alt="Range-Doppler map over time"
+             onclick="this.classList.toggle('zoomed')">
+        <figcaption>Range-Doppler map</figcaption>
+      </figure>
+      <figure class="inline-figure equal-figure gif-figure">
+        <img src="../assets/images/projects/sensor-fusion/testing-3d-dbscan-radar.gif"
+             alt="DBSCAN-clustered 3D radar point cloud over time"
+             onclick="this.classList.toggle('zoomed')">
+        <figcaption>DBSCAN clustering of radar returns into a 3D point cloud</figcaption>
+      </figure>
     </div>
   </div>
 </section>
