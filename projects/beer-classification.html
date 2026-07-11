@@ -27,6 +27,23 @@
   .gallery-slot figcaption a {
     color: #fff;
   }
+  #beer-images-gallery.gallery-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  #beer-images-gallery .gallery-slot {
+    flex: none;
+  }
+  #beer-samples {
+    width: 260px;
+    aspect-ratio: 642 / 630;
+  }
+  #efficientnetv2-arch {
+    width: 420px;
+    aspect-ratio: 1400 / 592;
+  }
 </style>
 </head>
 <body>
@@ -75,18 +92,17 @@
 <section>
   <div class="container">
     <h2>Images</h2>
-    <div class="gallery-grid">
-      <div class="gallery-slot">
+    <div class="gallery-grid" id="beer-images-gallery">
+      <div class="gallery-slot" id="beer-samples">
         <img src="../assets/images/projects/beer-classification/beer.png"
              alt="Beer classifications"
              onclick="this.classList.toggle('zoomed')">
       </div>
-      <figure class="gallery-slot">
+      <figure class="gallery-slot" id="efficientnetv2-arch">
         <img src="../assets/images/projects/beer-classification/efficientnetv2.png"
              alt="EfficientNetV2 model architecture"
              onclick="this.classList.toggle('zoomed')">
         <figcaption>
-          Source:
           <a href="https://arxiv.org/abs/2104.00298" target="_blank" rel="noopener">EfficientNetV2: Smaller Models and Faster Training</a>
         </figcaption>
       </figure>
