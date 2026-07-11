@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model Compression of Deep Neural Networks — Alfredo Wijaya Hardjoprawiro</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  /* Scoped to this page: keep the pruning-granularity figure small and centered.
+     Adjust size via --inline-figure-width (per-instance, see usage below). */
+  .inline-figure {
+    --inline-figure-width: 380px;
+    max-width: var(--inline-figure-width);
+    margin: 1.5rem auto;
+    text-align: center;
+  }
+  .inline-figure img {
+    width: 100%;
+    height: auto;
+    cursor: zoom-in;
+  }
+  .inline-figure img.zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: auto;
+    max-width: 90vw;
+    max-height: 90vh;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    cursor: zoom-out;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+  }
+  .inline-figure figcaption {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+  }
+  .stack-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .stack-grid .inline-figure {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+  }
+  .stack-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  @media (max-width: 640px) {
+    .stack-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a class="brand" href="../index.html">Personal Homepage</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul>
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../projects.html" class="active">Projects</a></li>
+      <!-- <li><a href="../index.html#experience">Experience</a></li> -->
+    </ul>
+  </div>
+</nav>
+
+<header class="project-header">
+  <div class="container">
+    <h1>Model Compression: Pruning &amp; Knowledge Distillation</h1>
+    <p class="meta">M.Sc. Artificial Intelligence, TH Ingolstadt · Course Project</p>
+    <ul class="tag-list">
+      <li class="tag">Pruning</li>
+      <li class="tag">Knowledge Distillation</li>
+      <li class="tag">MobileNetV2</li>
+      <li class="tag">PyTorch</li>
+    </ul>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>Overview</h2>
+    <p>
+      MobileNetV2 is already a lightweight image classifier (3.5M parameters, vs. 61M for
+      AlexNet and 138M for VGG), pretrained on ImageNet1k's 1,000 classes with 71.87%
+      Top-1 / 90.31% Top-5 accuracy. The goal here was to push it further: find the best
+      trade-off between model size, inference speed, and accuracy through <strong>channel-level
+      pruning, and recover the resulting accuracy loss through fine-tuning
+      strategies including <strong>retraining, iterative pruning, and knowledge distillation</strong>. The
+      central challenge is that MobileNetV2 is already compact by design, leaving little
+      redundancy to remove before accuracy degrades sharply.
+    </p>
+    <p><a href="https://github.com/alfredowh/model-compression" target="_blank" rel="noopener">View repository →</a></p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Pruning Methodology</h2>
+    <p>
+      Structured pruning was chosen over fine-grained/unstructured pruning because it
+      speeds up inference on standard hardware without needing sparse-matrix support.
+      Specifically, <strong>channel-level pruning</strong> was applied to MobileNetV2's
+      convolution layers — removing entire channels rather than individual weights.
+    </p>
+    <figure class="inline-figure" style="--inline-figure-width: 540px;">
+      <img src="../assets/images/projects/model-compression/pruning-granularity.png"
+           alt="Pruning granularity spectrum (fine-grained → channel-level)"
+           onclick="this.classList.toggle('zoomed')">
+      <figcaption>
+        Source:
+        <a href="https://arxiv.org/abs/1705.08922" target="_blank" rel="noopener">Exploring the granularity of sparsity in convolutional neural networks, Mao et al.</a>
+      </figcaption>
+    </figure>
+
+    <h3>Criterion — which channels to remove</h3>
+    <table class="eval-table">
+      <thead>
+        <tr><th>Criterion</th><th>Idea</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Magnitude-based</strong></td>
+          <td>Rank channels by their L1/L2 weight norm — larger absolute weights are assumed more important.</td>
+        </tr>
+        <tr>
+          <td><strong>Scaling-based</strong></td>
+          <td>Rank channels by their batch-norm scale (γ). Since y = γx̂ + β, a γ close to zero means that channel barely contributes to the output.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Type — how the pruning ratio is applied</h3>
+    <table class="eval-table">
+      <thead>
+        <tr><th>Type</th><th>Idea</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Layer-wise (uniform)</strong></td>
+          <td>Every layer is pruned by the same fixed ratio.</td>
+        </tr>
+        <tr>
+          <td><strong>Global</strong></td>
+          <td>A single threshold is set from the ratio applied to all layers' sorted criterion values pooled together, so layers are pruned by different amounts depending on where their channels rank overall.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <figure class="inline-figure" style="--inline-figure-width: 540px;">
+      <img src="../assets/images/projects/model-compression/pruning-experiment.png"
+           alt="Pruning experiments"
+           onclick="this.classList.toggle('zoomed')">
+           <figcaption>
+              Pruning experiments
+           </figcaption>
+    </figure>
+
+    <p>
+      Combining both axes gives four pruning variants (uniform/global × magnitude/scaling),
+      each tested at ratios [0.1, 0.3, 0.5, 0.7, 0.9].
+    </p>
+
+    <h3>Pruning alone collapses accuracy</h3>
+    <p>
+      Applied directly with no retraining, all four variants destroyed accuracy almost
+      immediately — Top-1 dropped below 2% even at a 10% pruning ratio. A per-layer
+      sensitivity analysis confirmed why: MobileNetV2's channels are tightly coupled, so
+      most conv layers lose the majority of their accuracy contribution within the first
+      10–30% pruned. This made fine-tuning after pruning essential.
+    </p>
+    <figure class="inline-figure" style="--inline-figure-width: 640px;">
+      <img src="../assets/images/projects/model-compression/pruning-wo-finetuning.png"
+           alt="Pruning experiments"
+           onclick="this.classList.toggle('zoomed')">
+           <figcaption>
+              Pruning with no fine-tuning
+           </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Fine-Tuning</h2>
+    <p>
+      Three fine-tuning strategies were explored to recover accuracy after pruning:
+      plain <strong>retraining</strong> at a fixed ratio, <strong>iterative pruning</strong>
+      (alternating pruning and retraining in stages to reach a target ratio gradually),
+      and <strong>knowledge distillation</strong> (using the unpruned model as a teacher
+      during retraining).
+    </p>
+
+    <h3>Setup — keeping the comparison fair</h3>
+    <p>
+      Since the goal was to compare pruning/fine-tuning strategies against each other
+      rather than to chase the highest possible accuracy, every experiment shared a fixed
+      training budget and configuration so that differences in results reflect the method,
+      not incidental training randomness:
+    </p>
+    <ul>
+      <li><strong>Same fixed data split</strong> — ImageNet1k's validation set (50,000 images, 50/class) was split 80/20 into train/test once and reused across all experiments, rather than pretraining on the full 1.28M-image training set.</li>
+      <li><strong>Same total epoch budget</strong> — every strategy trained for 20 epochs total. Iterative pruning splits this budget across two prune → retrain cycles of 10 epochs each, rather than getting extra training time as an unfair advantage.</li>
+      <li><strong>Same hyperparameters</strong> — 1/10th the original learning rate and batch size 16 across all runs.</li>
+      <li><strong>No data augmentation</strong> — removes an additional source of run-to-run randomness so results are directly comparable across strategies and ratios.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Results: Criterion &amp; Type</h2>
+
+    <h3>Scaling-based vs. magnitude-based pruning</h3>
+    <p>
+      With retraining held constant, <strong>global scaling-based pruning clearly
+      outperformed global magnitude-based pruning</strong> at every ratio — magnitude-based
+      pruning collapsed towards 0% Top-1 at higher ratios while scaling-based pruning
+      degraded far more gracefully. This matches the theory: the batch-norm scale γ
+      reflects a channel's actual contribution to the output directly, while weight
+      magnitude is only a proxy.
+    </p>
+    <div class="stack-grid">
+      <div class="stack-col">
+        <figure class="inline-figure">
+          <img src="../assets/images/projects/model-compression/pruning-retraining-global-scaling-val-loss.png"
+               alt="Global scaling-based pruning — validation loss during retraining"
+               onclick="this.classList.toggle('zoomed')">
+        </figure>
+        <figure class="inline-figure">
+          <img src="../assets/images/projects/model-compression/pruning-retraining-global-scaling-test.png"
+               alt="Global scaling-based pruning — test accuracy after retraining"
+               onclick="this.classList.toggle('zoomed')">
+          <figcaption>Global scaling-based</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure">
+          <img src="../assets/images/projects/model-compression/pruning-retraining-magnitude-scaling-val-loss.png"
+               alt="Global magnitude-based pruning — validation loss during retraining"
+               onclick="this.classList.toggle('zoomed')">
+        </figure>
+        <figure class="inline-figure">
+          <img src="../assets/images/projects/model-compression/pruning-retraining-magnitude-scaling-test.png"
+               alt="Global magnitude-based pruning — test accuracy after retraining"
+               onclick="this.classList.toggle('zoomed')">
+          <figcaption>Global magnitude-based</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <h3>Global vs. uniform pruning</h3>
+    <p>
+      Using scaling-based pruning as the criterion, <strong>global pruning outperformed
+      uniform (layer-wise) pruning</strong>, with the gap widening at higher pruning
+      ratios — despite ending up with a similar or even lower total parameter count.
+      Inspecting the per-layer parameter counts showed why: global pruning automatically
+      preserves more channels in the shallow layers, indicating that early layers are
+      more important to MobileNetV2's representational capacity than uniform pruning
+      assumes.
+    </p>
+    <div class="stack-grid">
+      <div class="stack-col">
+        <figure class="inline-figure">
+          <img src="../assets/images/projects/model-compression/pruning-global-uniform.png"
+               alt="Global vs. uniform pruning accuracy across pruning ratios"
+               onclick="this.classList.toggle('zoomed')">
+          <figcaption>Global vs. uniform pruning</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure">
+          <img src="../assets/images/projects/model-compression/pruning-global-uniform-params.png"
+               alt="Per-layer parameter count, global vs. uniform pruning"
+               onclick="this.classList.toggle('zoomed')">
+          <figcaption>Global pruning works better despite fewer parameters</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Results: Iterative Pruning</h2>
+    <p>
+      Rather than pruning straight to a high target ratio, iterative pruning reaches it
+      in two smaller steps (e.g. 0.5 → 0.5 again ≈ 0.75 total, 0.7 → 0.7 again ≈ 0.91
+      total), retraining for 10 epochs after each step within the same 20-epoch overall
+      budget as single-shot retraining. This consistently <strong>outperformed one-shot
+      retraining at large total pruning ratios</strong>, where removing that many channels
+      in a single step leaves too little capacity for the network to recover from in one
+      pass.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Results: Knowledge Distillation</h2>
+    <p>
+      Knowledge distillation uses the original, unpruned MobileNetV2 as a teacher to
+      guide the pruned student during retraining. Two variants were compared, both using
+      the same combined loss weighting (0.75 × classification + 0.25 × distillation):
+    </p>
+    <table class="eval-table">
+      <thead>
+        <tr><th>Variant</th><th>Distillation loss</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Matching output logits</strong></td>
+          <td>KL-divergence between teacher and student output distributions, softened with a temperature &gt; 1.</td>
+        </tr>
+        <tr>
+          <td><strong>Matching intermediate features</strong></td>
+          <td>MSE between teacher and student feature maps at three manually chosen layers (4, 14, 18).</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Matching output logits performed slightly better across all pruning ratios and is
+      simpler to implement — matching intermediate features requires manually choosing
+      which layers to align, an extra hyperparameter that didn't pay off here.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Comparing Fine-Tuning Strategies</h2>
+    <p>
+      Putting retraining, iterative pruning, and knowledge distillation side by side:
+      <strong>knowledge distillation gave the strongest boost across most pruning
+      ratios</strong>, while <strong>iterative pruning's advantage only showed up at
+      large pruning ratios</strong>, where all strategies otherwise converge to
+      similarly low accuracy.
+    </p>
+    <figure class="inline-figure" style="--inline-figure-width: 640px;">
+      <img src="../assets/images/projects/model-compression/finetuning.png"
+            alt="Retraining vs. iterative pruning vs. knowledge distillation"
+            onclick="this.classList.toggle('zoomed')">
+      <figcaption>Retraining vs. iterative pruning vs. knowledge distillation</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Improvement Potential</h2>
+
+    <h3>Overfitting from limited fine-tuning data</h3>
+    <p>
+      A quick hyperparameter check (adding horizontal-flip augmentation, increasing
+      batch size) recovered noticeably more accuracy at the same pruning ratio,
+      pointing to overfitting as a limiting factor: the fine-tuning split used here
+      draws from ImageNet1k's 50,000-image validation set, versus the 1.28M images in
+      the full training set. Further hyperparameter tuning and more training data are
+      likely the fastest path to closing the remaining accuracy gap.
+    </p>
+    
+    <figure class="inline-figure" style="--inline-figure-width: 640px;">
+      <img src="../assets/images/projects/model-compression/hp-tuning.png"
+            alt="Hyperparameter tuning effects"
+            onclick="this.classList.toggle('zoomed')">
+      <figcaption>Hyperparameter tuning effects</figcaption>
+    </figure>
+
+    <h3>Inference speed</h3>
+    <p>
+      Measured on an NVIDIA RTX 3050 Laptop GPU and an Intel i7-11800H CPU, latency
+      improved with pruning ratio on CPU fairly consistently, but only inconsistently
+      on GPU — the irregular channel counts left after pruning don't align well with
+      the GPU's underlying tiling/warp architecture, so the parameter reduction doesn't
+      translate cleanly into GPU speedup without further kernel-level optimization.
+    </p>
+    <div class="stack-grid">
+      <div class="stack-col">
+        <figure class="inline-figure">
+          <img src="../assets/images/projects/model-compression/inference-speed-gpu.png"
+               alt="Inference latency vs. pruning ratio on GPU"
+               onclick="this.classList.toggle('zoomed')">
+          <figcaption>GPU (RTX 3050 Laptop)</figcaption>
+        </figure>
+      </div>
+      <div class="stack-col">
+        <figure class="inline-figure">
+          <img src="../assets/images/projects/model-compression/inference-speed-cpu.png"
+               alt="Inference latency vs. pruning ratio on CPU"
+               onclick="this.classList.toggle('zoomed')">
+          <figcaption>CPU (i7-11800H)</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Conclusion</h2>
+    <ul>
+      <li>MobileNetV2 is highly sensitive to pruning — channel-level pruning is an aggressive method for an already-compact model.</li>
+      <li>Scaling-based pruning (batch-norm γ) outperforms magnitude-based pruning as a channel-importance criterion.</li>
+      <li>Global pruning outperforms uniform pruning, revealing that shallow layers matter more than a fixed per-layer ratio assumes.</li>
+      <li>Iterative pruning improves accuracy over one-shot retraining, specifically at large pruning ratios.</li>
+      <li>Knowledge distillation generally improves accuracy of pruned models, and matching output logits is simpler and slightly stronger than matching intermediate features.</li>
+    </ul>
+    <p>
+      <strong>Outlook:</strong> explore reinforcement-learning-based pruning heuristics
+      in place of fixed magnitude/scaling criteria, distill from a larger teacher model
+      (e.g. ResNet), and extend distillation to intermediate weights rather than just
+      activations.
+    </p>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Alfredo Wijaya Hardjoprawiro — M.Sc. Artificial Intelligence, TH Ingolstadt</p>
+    <div class="links">
+      <a href="mailto:alh7017@thi.de">alh7017@thi.de</a>
+      <a href="mailto:alfredowijaya@gmail.com">alfredowijaya@gmail.com</a>
+      <a href="https://github.com/alfredowh" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/alfredowijaya" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://alfredowh.github.io" target="_blank" rel="noopener">alfredowh.github.io</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+</body>
+</html>

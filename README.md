@@ -29,7 +29,7 @@ Open `index.html` directly in a browser, or serve it locally for routing
 closer to how GitHub Pages serves it:
 
 ```
-npx serve .
+python -m http.server
 ```
 
 ## Publish to GitHub Pages
