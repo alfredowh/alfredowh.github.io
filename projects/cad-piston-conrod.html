@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kolben &amp; Pleuel — Piston and Connecting Rod — Alfredo Wijaya Hardjoprawiro</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gallery-grid figure {
+    margin: 0;
+  }
+  .gallery-grid figure.wide {
+    grid-column: 1 / -1;
+  }
+  .gallery-grid .gallery-slot {
+    aspect-ratio: 16 / 9;
+  }
+  .gallery-grid .gallery-slot img {
+    object-fit: contain;
+  }
+  .gallery-grid figcaption {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 0.4rem;
+  }
+  @media (max-width: 720px) {
+    .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a class="brand" href="../index.html">Personal Homepage</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul>
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../projects.html" class="active">Projects</a></li>
+      <!-- <li><a href="../index.html#experience">Experience</a></li> -->
+    </ul>
+  </div>
+</nav>
+
+<header class="project-header">
+  <div class="container">
+    <h1>Kolben &amp; Pleuel — Piston and Connecting Rod</h1>
+    <p class="meta">HS Hannover · B.Eng. Mechatronics · CAD Design Project (1st Semester) · Winter 2017/2018</p>
+    <ul class="tag-list">
+      <li class="tag">Autodesk Inventor</li>
+      <li class="tag">Parametric 3D Modeling</li>
+      <li class="tag">Assembly Design</li>
+      <li class="tag">Technical Drawing</li>
+    </ul>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>Overview</h2>
+    <p>
+      One of my first hands-on CAD projects in the B.Eng. Mechatronics program
+      at HS Hannover: a parametric 3D model of a <strong>piston and connecting
+      rod</strong> (<em>Pleuel</em>) assembly, designed in
+      <strong>Autodesk Inventor</strong> in the 1st semester.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Design &amp; Assembly</h2>
+    <ul>
+      <li>Modeled the <strong>piston</strong> (ring grooves, wrist-pin bore, skirt) and a <strong>two-piece connecting rod</strong> — rod and cap — split at the big-end bore.</li>
+      <li>Assembled the parts with mate/insert constraints and standard bolts, nuts, and retaining rings; produced <strong>2D drawings</strong> and a <strong>STEP</strong> export.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Images</h2>
+    <div class="gallery-grid">
+      <figure>
+        <div class="gallery-slot">
+          <img src="../assets/images/projects/cad-piston-conrod/piston.png"
+               alt="Finished piston model in Autodesk Inventor"
+               onclick="this.classList.toggle('zoomed')">
+        </div>
+        <figcaption>Finished piston model</figcaption>
+      </figure>
+      <figure>
+        <div class="gallery-slot">
+          <img src="../assets/images/projects/cad-piston-conrod/piston-rod-assembly.png"
+               alt="Piston and connecting rod assembly"
+               onclick="this.classList.toggle('zoomed')">
+        </div>
+        <figcaption>Piston and rod assembly</figcaption>
+      </figure>
+      <figure class="wide">
+        <div class="gallery-slot">
+          <img src="../assets/images/projects/cad-piston-conrod/exploded-assembly.png"
+               alt="Exploded view of the connecting rod assembly with bolts, nuts and retaining rings"
+               onclick="this.classList.toggle('zoomed')">
+        </div>
+        <figcaption>Exploded assembly view</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Alfredo Wijaya Hardjoprawiro — M.Sc. Artificial Intelligence, TH Ingolstadt</p>
+    <div class="links">
+      <a href="mailto:alh7017@thi.de">alh7017@thi.de</a>
+      <a href="mailto:alfredowijaya@gmail.com">alfredowijaya@gmail.com</a>
+      <a href="https://github.com/alfredowh" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/alfredowijaya" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://alfredowh.github.io" target="_blank" rel="noopener">alfredowh.github.io</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+</body>
+</html>
