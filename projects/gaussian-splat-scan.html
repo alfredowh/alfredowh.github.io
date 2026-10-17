@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone Video to a Metric Photoreal 3D Scene using Gaussian Splatting — Alfredo Wijaya Hardjoprawiro</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .fig { margin: 1.2rem 0; }
+  .fig img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+    border-radius: 6px;
+    cursor: zoom-in;
+  }
+  .fig img.zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    max-width: 90vw;
+    max-height: 90vh;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    cursor: zoom-out;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+  }
+  .fig.narrow img { max-width: 640px; width: 100%; }
+  .fig figcaption {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  .fig-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+  .fig-row .fig { margin: 0; }
+  .fig-row .fig img { width: 100%; }
+  .results-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+  .results-table th, .results-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  .bar-chart { margin: 1.2rem 0 0.4rem; }
+  .bc-row, .bc-axis {
+    display: grid;
+    grid-template-columns: minmax(130px, 220px) 1fr 76px;
+    gap: 0.9rem;
+    align-items: center;
+  }
+  .bc-row { margin: 0.7rem 0; }
+  .bc-label { font-size: 0.88rem; line-height: 1.3; }
+  .bc-track {
+    position: relative;
+    height: 30px;
+    border-radius: 6px;
+    background: var(--bg-alt);
+    background-image: repeating-linear-gradient(to right, transparent 0, transparent calc(25% - 1px), var(--border) calc(25% - 1px), var(--border) 25%);
+  }
+  .bc-bar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; min-width: 3px; }
+  .bc-a  { background: linear-gradient(90deg, #5b7cfa, var(--accent)); }
+  .bc-a2 { background: linear-gradient(90deg, #8fa6f7, #6f8df0); }
+  .bc-g  { background: var(--text-muted); opacity: 0.5; }
+  .bc-ci {
+    position: absolute; top: 50%; height: 2px; background: var(--text);
+    transform: translateY(-50%);
+  }
+  .bc-ci::before, .bc-ci::after {
+    content: ""; position: absolute; top: -6px; width: 2px; height: 14px; background: var(--text);
+  }
+  .bc-ci::before { left: 0; } .bc-ci::after { right: 0; }
+  .bc-val { display: flex; flex-direction: column; line-height: 1.2; }
+  .bc-val strong { font-size: 1.05rem; }
+  .bc-val small { color: var(--text-muted); font-size: 0.75rem; }
+  .bc-ticks { position: relative; height: 1.2rem; }
+  .bc-ticks i {
+    position: absolute; transform: translateX(-50%); font-style: normal;
+    font-size: 0.72rem; color: var(--text-muted);
+  }
+  .bc-ticks i:first-child { transform: none; }
+  .bc-ticks i:last-child { transform: translateX(-100%); }
+  .bc-note { color: var(--text-muted); font-size: 0.85rem; }
+  @media (max-width: 600px) {
+    .bc-row, .bc-axis { grid-template-columns: 1fr 64px; gap: 0.3rem 0.6rem; }
+    .bc-label { grid-column: 1 / -1; }
+    .bc-axis > span { display: none; }
+    .bc-axis .bc-ticks { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a class="brand" href="../index.html">Personal Homepage</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul>
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../projects.html" class="active">Projects</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="project-header">
+  <div class="container">
+    <h1>Phone Video to a Metric Photoreal 3D Scene using Gaussian Splatting</h1>
+    <p class="meta">Personal project · Real2Sim side project of <a href="hurobo.html">hurobo</a> · October 2026</p>
+    <ul class="tag-list">
+      <li class="tag">3D Gaussian Splatting</li>
+      <li class="tag">gsplat</li>
+      <li class="tag">COLMAP</li>
+      <li class="tag">ChArUco</li>
+      <li class="tag">Real2Sim</li>
+    </ul>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>Overview</h2>
+    <p>
+      A phone video of a real table scene (table, background, a bowl and a
+      plate) turned into a metric, photoreal 3D model with
+      <strong>3D Gaussian Splatting</strong>. It started as the visual-fidelity
+      branch of <a href="hurobo.html">hurobo</a>
+      (<a href="https://github.com/alfredowh/hurobo" target="_blank" rel="noopener">GitHub</a>) and is a visual result only:
+      the splats are not used to train or evaluate a policy.
+    </p>
+    <figure class="fig">
+      <img src="../assets/images/projects/gaussian-splat-scan/scene_orbit.gif" alt="Sweep over the whole-scene Gaussian splat of the real table" onclick="this.classList.toggle('zoomed')">
+      <figcaption>The whole scene, two phone clips, cut to the box x −0.39..1.66, y −0.79..0.61, z −2.71..1.01 m (table frame, tabletop at z = 0).</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Pipeline</h2>
+    <ol>
+      <li><strong>Capture:</strong> walk around the scene with a phone. A ChArUco board shown on a tablet gives the metric frame.</li>
+      <li><strong>Structure from motion:</strong> keyframes go to <code>pycolmap</code> for camera poses. COLMAP's default SIFT settings registered only 39 of 120 frames of a low-texture clip, so the contrast threshold is lowered.</li>
+      <li><strong>Splat training:</strong> <code>gsplat</code> trains the Gaussians on the registered frames.</li>
+      <li><strong>Metric alignment:</strong> the board fixes scale and a z-up table frame with the tabletop at z = 0 (corner RMS 0.5 to 1.1 mm).</li>
+      <li><strong>Cut:</strong> crop the whole scene to a box, or cut objects out of it (bowl and plate found as blobs above the tabletop).</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Result: Photo vs. Splat</h2>
+    <p>Four held-out camera poses (not used in training), phone photo on the left and splat render on the right.</p>
+    <figure class="fig">
+      <img src="../assets/images/projects/gaussian-splat-scan/scene_photo_vs_splat.png" alt="Phone photo and splat render from four held-out camera poses" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Whole-scene splat: phone photo vs. render from four held-out poses.</figcaption>
+    </figure>
+    <p>
+      Held-out PSNR is 29.5 dB for one clip and 25.6 dB for the two clips
+      combined (not a like-for-like comparison).
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Scanned Objects: Bowl and Plate</h2>
+    <p>
+      The bowl and plate are cut out of the same scan. Their measured sizes
+      against a ruler: plate about 26 cm (ruler 25.5 cm), bowl about 16 × 14 cm
+      (ruler 13.8 cm).
+    </p>
+    <figure class="fig narrow">
+      <img src="../assets/images/projects/gaussian-splat-scan/bowl_plate_orbit.gif" alt="Sweep over the scanned bowl and plate" loading="lazy" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Sweep over the scanned bowl and plate.</figcaption>
+    </figure>
+    <p>
+      The glossy white plate is textureless, so the optimiser leaves
+      translucent patches and a warped rim, and more iterations did not help.
+      A <strong>shape prior</strong> fills it: the measured dish (25.5 cm
+      diameter, 2.8 cm high) is fitted to the splat, Gaussians off the surface
+      are dropped, and flat Gaussians are added where the surface is open.
+    </p>
+    <figure class="fig">
+      <img src="../assets/images/projects/gaussian-splat-scan/bowl_plate_splats.png" alt="Bowl, plate, and plate with shape-prior fill from four angles" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Bowl (top), plate as scanned (middle) and plate with the shape-prior fill (bottom), four angles. In the last row the rim and profile come from the prior, not from the scan.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Limitations</h2>
+    <ul>
+      <li>One table, one board position, two clips; the table is only partly covered.</li>
+      <li>The tablet thickness and square size are hand measurements.</li>
+      <li>The cut objects carry a skirt of wood grain from the table.</li>
+      <li>The plate fill is opt-in, judged visually, with no quality number.</li>
+    </ul>
+    <p>
+      Used in <a href="hurobo.html">hurobo</a>, where the bowl and plate
+      splats are shown inside the LIBERO simulator.
+      Code: the scan pipeline lives in the
+      <a href="https://github.com/alfredowh/hurobo" target="_blank" rel="noopener">hurobo repository on GitHub</a>.
+    </p>
+  </div>
+</section>
+<footer class="site-footer">
+  <div class="container">
+    <p>Alfredo Wijaya Hardjoprawiro — M.Sc. Artificial Intelligence, TH Ingolstadt</p>
+    <div class="links">
+      <a href="mailto:alh7017@thi.de">alh7017@thi.de</a>
+      <a href="mailto:alfredowijaya@gmail.com">alfredowijaya@gmail.com</a>
+      <a href="https://github.com/alfredowh" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/alfredowijaya" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://alfredowh.github.io" target="_blank" rel="noopener">alfredowh.github.io</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+</body>
+</html>

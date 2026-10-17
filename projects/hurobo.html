@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hurobo: Human Video to Robot Policy — Alfredo Wijaya Hardjoprawiro</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .fig { margin: 1.2rem 0; }
+  .fig img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+    border-radius: 6px;
+    cursor: zoom-in;
+  }
+  .fig img.zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    max-width: 90vw;
+    max-height: 90vh;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    cursor: zoom-out;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+  }
+  .fig.narrow img { max-width: 640px; width: 100%; }
+  .fig figcaption {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  .fig-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+  .fig-row .fig { margin: 0; }
+  .fig-row .fig img { width: 100%; }
+  .results-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+  .results-table th, .results-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  .bar-chart { margin: 1.2rem 0 0.4rem; }
+  .bc-row, .bc-axis {
+    display: grid;
+    grid-template-columns: minmax(130px, 220px) 1fr 76px;
+    gap: 0.9rem;
+    align-items: center;
+  }
+  .bc-row { margin: 0.7rem 0; }
+  .bc-label { font-size: 0.88rem; line-height: 1.3; }
+  .bc-track {
+    position: relative;
+    height: 30px;
+    border-radius: 6px;
+    background: var(--bg-alt);
+    background-image: repeating-linear-gradient(to right, transparent 0, transparent calc(25% - 1px), var(--border) calc(25% - 1px), var(--border) 25%);
+  }
+  .bc-bar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; min-width: 3px; }
+  .bc-a  { background: linear-gradient(90deg, #5b7cfa, var(--accent)); }
+  .bc-a2 { background: linear-gradient(90deg, #8fa6f7, #6f8df0); }
+  .bc-g  { background: var(--text-muted); opacity: 0.5; }
+  .bc-ci {
+    position: absolute; top: 50%; height: 2px; background: var(--text);
+    transform: translateY(-50%);
+  }
+  .bc-ci::before, .bc-ci::after {
+    content: ""; position: absolute; top: -6px; width: 2px; height: 14px; background: var(--text);
+  }
+  .bc-ci::before { left: 0; } .bc-ci::after { right: 0; }
+  .bc-val { display: flex; flex-direction: column; line-height: 1.2; }
+  .bc-val strong { font-size: 1.05rem; }
+  .bc-val small { color: var(--text-muted); font-size: 0.75rem; }
+  .bc-ticks { position: relative; height: 1.2rem; }
+  .bc-ticks i {
+    position: absolute; transform: translateX(-50%); font-style: normal;
+    font-size: 0.72rem; color: var(--text-muted);
+  }
+  .bc-ticks i:first-child { transform: none; }
+  .bc-ticks i:last-child { transform: translateX(-100%); }
+  .bc-note { color: var(--text-muted); font-size: 0.85rem; }
+  @media (max-width: 600px) {
+    .bc-row, .bc-axis { grid-template-columns: 1fr 64px; gap: 0.3rem 0.6rem; }
+    .bc-label { grid-column: 1 / -1; }
+    .bc-axis > span { display: none; }
+    .bc-axis .bc-ticks { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a class="brand" href="../index.html">Personal Homepage</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul>
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../projects.html" class="active">Projects</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="project-header">
+  <div class="container">
+    <h1>hurobo: From Phone Video of a Human Hand to a Robot Policy in Simulation</h1>
+    <p class="meta">Personal project · Humanoid challenge · 8 – 16 October 2026</p>
+    <ul class="tag-list">
+      <li class="tag">Vision-Language-Action (VLA)</li>
+      <li class="tag">SmolVLA</li>
+      <li class="tag">LIBERO</li>
+      <li class="tag">Real2Sim</li>
+      <li class="tag">Gaussian Splatting</li>
+      <li class="tag">MediaPipe</li>
+    </ul>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>Overview</h2>
+    <p>
+      <strong>Question:</strong> can human videos improve a small VLA on a new
+      layout and a new object? The test case is <strong>SmolVLA</strong>
+      (450M parameters), a bowl-onto-plate task on a Franka Panda in the
+      <strong>LIBERO</strong> simulator, trained only on data from phone videos
+      of a human hand. Simulation only, no physical robot.
+    </p>
+    <p>
+      The video is used as a <strong>motion-capture device</strong>. Markers and
+      a hand tracker turn each clip into a hand path in the table frame. That
+      path is retargeted to many simulated object poses, and only successful
+      runs become training data. SmolVLA never sees a real pixel. Gaussian-splat
+      scans of the real scene are added for visual fidelity.
+    </p>
+    <figure class="fig">
+      <img loading="lazy" src="../assets/images/projects/hurobo/episode_dashboard.gif" alt="A recorded human demo as a LeRobot episode: markers, hand skeleton, TCP path, pinch aperture" onclick="this.classList.toggle('zoomed')">
+      <figcaption>A recorded human demo as a LeRobot episode: markers, hand skeleton, projected TCP path (top), pinch aperture, state and action signals (bottom). One real clip, cut to a single grasp cycle.</figcaption>
+    </figure>
+    <h3>Constraints</h3>
+    <ul>
+      <li><strong>One 16 GB GPU:</strong> a 450M model in bf16, no 3B/7B models.</li>
+      <li><strong>Phone only:</strong> about 26 tripod clips, one camera, no depth sensor, no glove.</li>
+      <li><strong>No physical robot:</strong> success rate in LIBERO is the only metric.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Pipeline: Hand Video In, Robot Demos Out</h2>
+    <ol>
+      <li><strong>Record:</strong> tripod phone, ChArUco-calibrated. ArUco markers on table, bowl and plate.</li>
+      <li><strong>Extract:</strong> hand TCP (midpoint of thumb and index tip), grasp from the pinch, and object poses, all in the table frame.</li>
+      <li><strong>Twin:</strong> copy the real layout and camera into LIBERO, with a real vs. sim side-by-side replay.</li>
+      <li><strong>Multiply:</strong> split each demo into object-relative segments, retarget to many sim poses, keep only the successes.</li>
+      <li><strong>Train:</strong> fine-tune SmolVLA from <code>smolvla_base</code> (never saw LIBERO) on generated data only.</li>
+      <li><strong>Evaluate:</strong> <code>lerobot-eval</code> with success rate and 95% confidence intervals against baselines.</li>
+    </ol>
+    <p>
+      <strong>Who contributes what.</strong> The human video supplies approach
+      direction, grasp timing, lift height, carry path, place offset and release
+      timing. The simulator supplies exact object poses, geometry and appearance,
+      with a fixed top-down gripper orientation and the yaw taken from the object.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Four Ways to Close the Real-to-Sim Gap</h2>
+    <table class="results-table">
+      <thead><tr><th>Approach</th><th>Gap left</th><th>Catch</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>1. Teleoperate in sim</td><td>No visual gap</td><td>Jerky, slow, few demos; real recording unused</td><td>Debug tool only</td></tr>
+        <tr><td>2. Scan the objects</td><td>Objects match; scene stays synthetic</td><td>Scan quality, metric alignment</td><td>Stretch</td></tr>
+        <tr><td>3. Scan the whole scene</td><td>Smallest visual gap</td><td>Alignment, GPU time; physics still LIBERO</td><td>Stretch</td></tr>
+        <tr><td>4. Size-matched objects</td><td>Size matches; look does not, but the policy sees no real pixels</td><td>Measure objects, print markers</td><td>Core path</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>The Human Demo</h2>
+    <p>
+      ArUco markers on the plate and the bowl pad, and a ChArUco board as the
+      table frame. MediaPipe gives the hand skeleton; the TCP is in metres in
+      the table frame; pinch aperture with hysteresis gives open or closed.
+      Each clip is stored as a LeRobot episode (here: 199 samples at 20 Hz over
+      9.9 s).
+    </p>
+    <figure class="fig">
+      <img src="../assets/images/projects/hurobo/dataset_replay_synchronised.gif" alt="Recorded dataset next to the LIBERO robot replay" loading="lazy" onclick="this.classList.toggle('zoomed')">
+      <figcaption>SceneTwin: the recorded episode (left, slowed) beside its LIBERO replay (right, paced). This replay timed out and is not representative of the generated set.</figcaption>
+    </figure>
+    <h3>From 26 clips to 12 usable demos</h3>
+    <ol>
+      <li><strong>Filter frames:</strong> drop frames with no hand or two hands, a marker pose that reprojects badly (over 15 px), a hand at the image border, or depth outside 0.15 to 3 m.</li>
+      <li><strong>Find the cycle:</strong> keep the first gap-free run that holds open, closed, open.</li>
+      <li><strong>Cut:</strong> trim from the start of the run to 2 s after the release.</li>
+      <li><strong>Reject:</strong> drop clips shorter than 1.5 s or missing the board, bowl or plate marker in the first second.</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Generating the Robot Demos</h2>
+    <ol>
+      <li><strong>Sample layout:</strong> a random bowl and plate position in the size-matched LIBERO scene (bowl ×1.23, plate ×1.85 of LIBERO's size).</li>
+      <li><strong>Pick source:</strong> one of the 12 cleaned human demos at random per rollout.</li>
+      <li><strong>Re-anchor:</strong> the approach (last 20 cm of the hand path) relative to the bowl, the carry relative to the plate.</li>
+      <li><strong>Execute, keep wins:</strong> grasp at a fixed 4 cm height, release 4 mm over the plate, run closed loop and keep only the successes.</li>
+    </ol>
+    <p>
+      First run: <strong>100 successes of 170 attempts (59 %)</strong> in about
+      40 to 50 minutes in one process. Failures: 37 never lifted the bowl, 33
+      timed out. The output is 35,498 frames at 20 Hz with agent-view and wrist
+      cameras.
+    </p>
+    <div class="fig-row">
+      <figure class="fig"><img src="../assets/images/projects/hurobo/generated_clip_0_stacked.gif" alt="Generated episode 1: agent view and wrist view" loading="lazy" onclick="this.classList.toggle('zoomed')"><figcaption>Generated episode 1</figcaption></figure>
+      <figure class="fig"><img src="../assets/images/projects/hurobo/generated_clip_1_stacked.gif" alt="Generated episode 2: agent view and wrist view" loading="lazy" onclick="this.classList.toggle('zoomed')"><figcaption>Generated episode 2</figcaption></figure>
+      <figure class="fig"><img src="../assets/images/projects/hurobo/generated_clip_2_stacked.gif" alt="Generated episode 3: agent view and wrist view" loading="lazy" onclick="this.classList.toggle('zoomed')"><figcaption>Generated episode 3</figcaption></figure>
+    </div>
+    <p class="fig-note" style="color:var(--text-muted);font-size:0.85rem;">Agent view (top) and wrist camera (bottom) of each episode.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Evaluation</h2>
+    <h3>Pretrained SmolVLA: layout and size matter</h3>
+    <p>
+      Pretrained checkpoints across five scene variants (stock, cleared, new
+      layout, real-size objects). A new layout alone takes the better
+      checkpoint from 6/10 to 0/10, and real-size objects give 0 even on
+      LIBERO's layout. 10 episodes per cell, so 0/10 means 0 to 28 % at 95 %.
+    </p>
+    <h3>Fine-tuned SmolVLA on 20 held-out layouts</h3>
+<div class="bar-chart" role="img" aria-label="Success rate on 20 held-out layouts with 95% confidence intervals: 70% ours from smolvla_libero, 15% ours from smolvla_base, 0% for both pretrained checkpoints">
+      <div class="bc-axis"><span></span><div class="bc-ticks"><i style="left:0%">0%</i><i style="left:25%">25%</i><i style="left:50%">50%</i><i style="left:75%">75%</i><i style="left:100%">100%</i></div><span></span></div>
+      <div class="bc-row">
+        <div class="bc-label">Ours, <code>smolvla_libero</code> init</div>
+        <div class="bc-track">
+          <div class="bc-bar bc-a" style="width:70%"></div>
+          <div class="bc-ci" style="left:48%;width:37%"></div>
+        </div>
+        <div class="bc-val"><strong>70%</strong><small>48–85%</small></div>
+      </div>
+      <div class="bc-row">
+        <div class="bc-label">Ours, <code>smolvla_base</code> init</div>
+        <div class="bc-track">
+          <div class="bc-bar bc-a2" style="width:15%"></div>
+          <div class="bc-ci" style="left:5%;width:31%"></div>
+        </div>
+        <div class="bc-val"><strong>15%</strong><small>5–36%</small></div>
+      </div>
+      <div class="bc-row">
+        <div class="bc-label"><code>lerobot/smolvla_libero</code> (pretrained)</div>
+        <div class="bc-track">
+          <div class="bc-bar bc-g" style="width:0.6%"></div>
+          <div class="bc-ci" style="left:0%;width:16%"></div>
+        </div>
+        <div class="bc-val"><strong>0%</strong><small>0–16%</small></div>
+      </div>
+      <div class="bc-row">
+        <div class="bc-label"><code>HuggingFaceVLA/smolvla_libero</code> (pretrained)</div>
+        <div class="bc-track">
+          <div class="bc-bar bc-g" style="width:0.6%"></div>
+          <div class="bc-ci" style="left:0%;width:16%"></div>
+        </div>
+        <div class="bc-val"><strong>0%</strong><small>0–16%</small></div>
+      </div>
+    </div>
+    <p class="bc-note">Bars: success rate over 20 held-out layouts, same for every policy. Whiskers: 95% confidence interval.</p>
+    <p>
+      Starting from <code>smolvla_libero</code> beats starting from
+      <code>smolvla_base</code> (14/20 vs 3/20, intervals do not overlap). One
+      seed, N = 20; the best checkpoint of each run was picked on other
+      layouts, so the intervals are wide.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Photoreal Real2Sim (Gaussian Splats)</h2>
+    <p>
+      The splat route is for visual fidelity only, it does not train or
+      evaluate a policy. The scan itself (pipeline, held-out photo vs. splat
+      views, bowl and plate cut-outs) is its own project:
+      <a href="gaussian-splat-scan.html"><strong>Phone Video to a Metric Photoreal 3D Scene using Gaussian Splatting →</strong></a>
+    </p>
+    <figure class="fig">
+      <img src="../assets/images/projects/hurobo/scene_orbit.gif" alt="Sweep over the whole-scene Gaussian splat of the real table" onclick="this.classList.toggle('zoomed')">
+      <figcaption>The whole real scene (table, background, bowl, plate) as a 3D Gaussian splat.</figcaption>
+    </figure>
+    <figure class="fig narrow">
+      <img src="../assets/images/projects/hurobo/bowl_plate_orbit.gif" alt="Sweep over the scanned bowl and plate" loading="lazy" onclick="this.classList.toggle('zoomed')">
+      <figcaption>The scanned bowl and plate, cut out of the scene scan.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img src="../assets/images/projects/hurobo/libero_scanned_bowl_plate.png" alt="Scanned bowl and plate inside the LIBERO scene" onclick="this.classList.toggle('zoomed')">
+      <figcaption>The scanned bowl and plate inside LIBERO at measured sizes (bowl 13.8 cm, plate 25.5 cm), composited with the mesh robot by depth. The table cloth is still LIBERO's.</figcaption>
+    </figure>
+    <h3>Future work</h3>
+    <ul>
+      <li>Place the whole-scene splat in LIBERO as the background.</li>
+      <li>Collision meshes for the scanned bowl and plate.</li>
+      <li>Composite the mesh robot into the splat by depth.</li>
+      <li>Keep it framed as visual fidelity, not a trained result.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Future Work: Faster Demo Generation (MimicGen-style)</h2>
+    <p>
+      The generator can be sped up with a MimicGen-style expansion: pick the
+      human source demo nearest to the sampled layout, add action noise, and
+      screen rollouts by length. On 7 clips, the best screened run gave
+      <strong>100 of 125 accepted (80 %)</strong>, all within the 300-step
+      evaluation limit. The default generator accepted 38 to 47 per 100 to 120
+      attempts, and only 15 to 21 % of its episodes fit within 300 steps.
+    </p>
+    <div class="gallery-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:start;">
+      <div>
+        <h3>Pros</h3>
+        <ul>
+          <li>About 4× more usable episodes per attempt</li>
+          <li>Every episode fits the 300-step evaluation</li>
+          <li>Drops the 3 of 7 clips that never succeed</li>
+          <li>Noise and source mixing add variety</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Cons</h3>
+        <ul>
+          <li>The gain is mostly screening, speed and the length filter</li>
+          <li>Control run missing</li>
+          <li>No policy trained on it yet</li>
+          <li>7 clips, one session, one seed</li>
+        </ul>
+      </div>
+    </div>
+    <p>
+      This is optimization potential, not a result: it was not used for the
+      100-episode training set.
+    </p>  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Limitations and Status</h2>
+    <div class="gallery-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:start;">
+      <div>
+        <h3>Limitations</h3>
+        <ul>
+          <li>Simulation only, no real robot</li>
+          <li>Hand vs. gripper, real vs. rendered pixels</li>
+          <li>One camera, markers required</li>
+          <li>Fixed top-down grasp, one task</li>
+          <li>12 usable clips; marker size not measured</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Done, on real clips</h3>
+        <ul>
+          <li>26 clips recorded, 12 cleaned</li>
+          <li>100 generated episodes (100 of 170 rollouts)</li>
+          <li>SmolVLA fine-tuned: 14/20 from <code>smolvla_libero</code>, 3/20 from <code>smolvla_base</code></li>
+          <li>Bowl, plate and scene scanned as splats</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Still open</h3>
+        <ul>
+          <li>N = 50 evaluation, more seeds</li>
+          <li>Zero-shot and open-loop replay baselines, ACT baseline</li>
+          <li>Scene splat and collision meshes in LIBERO</li>
+          <li>Training on faster MimicGen-style generation</li>
+        </ul>
+      </div>
+    </div>
+    <p>
+      Every number on this page comes from a run in the repository; failed
+      runs are included.
+    </p>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Alfredo Wijaya Hardjoprawiro — M.Sc. Artificial Intelligence, TH Ingolstadt</p>
+    <div class="links">
+      <a href="mailto:alh7017@thi.de">alh7017@thi.de</a>
+      <a href="mailto:alfredowijaya@gmail.com">alfredowijaya@gmail.com</a>
+      <a href="https://github.com/alfredowh" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/alfredowijaya" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://alfredowh.github.io" target="_blank" rel="noopener">alfredowh.github.io</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+</body>
+</html>
