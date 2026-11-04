@@ -286,6 +286,29 @@ section h2 {
   font-size: 0.88rem;
 }
 
+/* Status badges on cards */
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.5rem;
+}
+
+.badge {
+  background: var(--accent);
+  color: var(--card-bg);
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.card-body p.stack {
+  font-size: 0.85rem;
+}
+
 /* Timeline */
 .timeline-item {
   margin-bottom: 1.5rem;

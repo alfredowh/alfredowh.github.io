@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANTS: Adversarial Agentic Task Synthesis — Alfredo Wijaya Hardjoprawiro</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .fig { margin: 1.2rem 0; }
+  .fig img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+    border-radius: 6px;
+    cursor: zoom-in;
+  }
+  .fig img.zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    max-width: 90vw;
+    max-height: 90vh;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    cursor: zoom-out;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+  }
+  .fig.narrow img { max-width: 640px; width: 100%; }
+  .fig figcaption {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  .results-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+  .results-table th, .results-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  .status-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+  .results-table th:nth-child(2), .results-table td:nth-child(2) { width: 5.5rem; text-align: center; }
+  .results-table th:nth-child(3), .results-table td:nth-child(3) { width: 30%; }
+  .container > h3 { margin-top: 1.8rem; }
+  .doc-link { margin-top: 0.6rem; font-size: 0.9rem; }
+  @media print {
+    .site-nav, .doc-link { display: none !important; }
+    section { padding: 0.5rem 0; break-inside: avoid; }
+    .project-header { padding: 1rem 0; }
+    .fig, table { break-inside: avoid; }
+    .fig img { cursor: default; max-height: 85mm; width: auto; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a class="brand" href="../index.html">Personal Homepage</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul>
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../projects.html" class="active">Projects</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="project-header">
+  <div class="container">
+    <h1>ANTS: Adversarial Agentic Task Synthesis</h1>
+    <p class="meta">Team project · Meta Global Hackathon · Work in progress</p>
+    <ul class="tag-list">
+      <li class="tag">SAM 3.1</li>
+      <li class="tag">Muse Wonder</li>
+      <li class="tag">Muse Spark</li>
+      <li class="tag">LIBERO</li>
+    </ul>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>Overview</h2>
+    <p class="status-row">
+      <span class="badge">Work in progress</span>
+      <span class="badge">Meta Global Hackathon</span>
+    </p>
+    <p>
+      <strong>Idea:</strong> teach a robot a task from <strong>one demo</strong>,
+      then let an adversary break the skill. A frozen model writes the policy.
+      Nothing is trained. The skill improves through <strong>context</strong> only.
+    </p>
+    <p>
+      ANTS is a project for the
+      <a href="https://dev.meta.ai/events/global-hackathon" target="_blank" rel="noopener">Meta Global Hackathon</a>.
+      The code is on
+      <a href="https://github.com/alfredowh/ANTS" target="_blank" rel="noopener">GitHub</a>.
+    </p>
+    <p class="doc-link"><a href="../assets/pdf/ANTS.pdf">Download this page as PDF</a></p>
+    <figure class="fig">
+      <img loading="lazy" src="../assets/images/projects/ants/architecture.png" alt="ANTS architecture: System 1 synthesizer, System 2 adversary, closed loop" onclick="this.classList.toggle('zoomed')">
+      <figcaption>ANTS architecture: System 1 writes the skill, System 2 tests it, and the loop feeds each failure back.</figcaption>
+    </figure>
+    <h3>Problem</h3>
+    <p>
+      One robot, one task, one policy. Each new task or robot needs new data
+      and fine-tuning. Data is the bottleneck.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>The Closed Loop</h2>
+    <ol>
+      <li><strong>Write (System 1):</strong> SAM 3.1 tracks the hand, the object and the gripper in one demo video. Muse Wonder turns the result into a policy.</li>
+      <li><strong>Break (System 2):</strong> Muse Spark plans tests. A LIBERO simulation runs them. Muse Spark explains each failure.</li>
+      <li><strong>Fix:</strong> each failure becomes a constraint. The constraint goes into the context of the generator, never into the weights. The generator writes a new policy.</li>
+      <li><strong>Gate:</strong> a new policy is accepted only if it is no worse on every case seen so far and better on at least one.</li>
+      <li><strong>Stop or ask:</strong> stop when every category is robust. If the generator stalls, ask a human for one targeted demo.</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Failure Cases, Not Random Tests</h2>
+    <p>
+      The adversary does <strong>not</strong> pick test cases at random. It
+      looks for <strong>failure cases</strong>. It spends the test budget on
+      the categories that are most likely to break the policy. Each test stays
+      inside a bounded severity.
+    </p>
+    <p>
+      The gate keeps the result safe. A policy that fixes one failure case
+      cannot break a case that passed before. Robustness never goes down.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Software Stack</h2>
+    <table class="results-table">
+      <thead><tr><th>Block</th><th>System</th><th>Tool</th></tr></thead>
+      <tbody>
+        <tr><td>Hand and object segmentation</td><td>1</td><td>SAM 3.1</td></tr>
+        <tr><td>Policy synthesis, with experience memory</td><td>1</td><td>Muse Wonder (via Muse Code)</td></tr>
+        <tr><td>Test planner, uses the failure history</td><td>2</td><td>Muse Spark</td></tr>
+        <tr><td>Rollout of the policy under a perturbation</td><td>2</td><td>LIBERO simulation</td></tr>
+        <tr><td>Failure diagnosis (grasp miss, collision, timeout)</td><td>2</td><td>Muse Spark</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Link to hurobo</h2>
+    <p>
+      <a href="hurobo.html">hurobo</a> turns a phone video of a human hand into
+      robot demos in LIBERO. ANTS also starts from a human video and runs in
+      LIBERO. The clip below is from hurobo: the recorded human demo (left)
+      beside its robot replay (right).
+    </p>
+    <figure class="fig narrow">
+      <img loading="lazy" src="../assets/images/projects/ants/sync-human-robot.gif" alt="Recorded human demo beside its LIBERO robot replay, synchronised" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Human demo and robot replay, synchronised (from <a href="hurobo.html">hurobo</a>).</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Results</h2>
+    <p>Results coming. All numbers will come from logged runs on a held-out test set.</p>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Alfredo Wijaya Hardjoprawiro — M.Sc. Artificial Intelligence, TH Ingolstadt</p>
+    <div class="links">
+      <a href="mailto:alh7017@thi.de">alh7017@thi.de</a>
+      <a href="mailto:alfredowijaya@gmail.com">alfredowijaya@gmail.com</a>
+      <a href="https://github.com/alfredowh" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/alfredowijaya" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://alfredowh.github.io" target="_blank" rel="noopener">alfredowh.github.io</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+</body>
+</html>
