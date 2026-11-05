@@ -42,6 +42,8 @@
   .status-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
   .results-table th:nth-child(2), .results-table td:nth-child(2) { width: 5.5rem; text-align: center; }
   .results-table th:nth-child(3), .results-table td:nth-child(3) { width: 30%; }
+  .questions-table th:nth-child(1), .questions-table td:nth-child(1) { width: 5cm; }
+  .questions-table th:nth-child(2), .questions-table td:nth-child(2) { width: auto; text-align: left; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .cols .fig { margin: 0.5rem 0; }
   @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
@@ -138,17 +140,23 @@
         <figcaption>v0, the first candidate policy generated and tested by System 1, run in LIBERO-Pro.</figcaption>
       </figure>
     </div>
-    <table class="results-table">
-      <thead><tr><th>Prompt to the generator</th><th>Solved</th><th>Note</th></tr></thead>
-      <tbody>
-        <tr><td>Text only</td><td>0/10</td><td>2 samples, 5 acceptance seeds each</td></tr>
-        <tr><td>Text + human video</td><td>5/5</td><td>best of 2 samples, the other sample failed</td></tr>
-      </tbody>
-    </table>
+    <div class="cols">
+      <figure class="fig">
+        <img loading="lazy" src="../assets/images/projects/ants/fig1_success_rates.svg" alt="Held-out pass rates, demo versus text only, on the scaled and stock scene" onclick="this.classList.toggle('zoomed')">
+        <figcaption>Held-out pass rate with 95% intervals. Programs were repaired on the scaled objects only.</figcaption>
+      </figure>
+      <figure class="fig">
+        <img loading="lazy" src="../assets/images/projects/ants/fig4_repair_journey.svg" alt="Tries each program needed on the debug seed" onclick="this.classList.toggle('zoomed')">
+        <figcaption>Tries needed on the debug seed (scaled objects).</figcaption>
+      </figure>
+    </div>
     <p>
-      This is an early hint, not a result: one task, one clip, two samples per
-      arm. A full demo versus no-demo evaluation is the first item of the
-      outlook. The demo can also come from teleoperation, not only from video.
+      Both arms were repaired on the scaled objects. There, text only catches up
+      (8/10 vs 7/10), but on the debug seed the demo programs solved it in 2 tries
+      while one text-only program never did. On other object sizes the text-only program fails (0/10), while the
+      demo program holds (7/10): the video gives relative numbers that transfer
+      across sizes. This is still an early hint, with one task, one clip and
+      five seeds. The demo can also come from teleoperation, not only from video.
     </p>
   </div>
 </section>
@@ -162,7 +170,7 @@
     </p>
     <ul>
       <li><strong>System 1, policy generator (synthesizer):</strong> turns the prompt (human video, teleop or text) into a <strong>program as policy</strong>, checks it in simulation and repairs it.</li>
-      <li><strong>System 2, failure case generator (adversary), built by <a href="https://www.linkedin.com/in/daniel-totolici" target="_blank" rel="noopener">Daniel Totolici</a>:</strong> looks for the cases most likely to break the policy. It picks the weakest category, proposes perturbations within a bounded severity (pose, size, physics, actuation, camera, lighting), runs them and diagnoses each failure into a rule.</li>
+      <li><strong>System 2, failure case generator (adversary):</strong> looks for the cases most likely to break the policy. It picks the weakest category, proposes perturbations within a bounded severity (pose, size, physics, actuation, camera, lighting), runs them and diagnoses each failure into a rule.</li>
       <li><strong>Gate:</strong> every rule goes back into System 1's context. A rewrite is accepted only if it is no worse on all cases seen so far and better on one.</li>
     </ul>
     <p>
@@ -197,7 +205,7 @@
       one line, <code>plate_top_z = max(...)</code>, Muse Wonder rewrote it and
       the gate accepted the fix.
     </p>
-    <table class="results-table">
+    <table class="results-table questions-table">
       <thead><tr><th>Question</th><th>Result</th><th>From</th></tr></thead>
       <tbody>
         <tr><td>One demo gives a working program?</td><td>v0 passes 47/50 held-out perturbed cases</td><td>759 LIBERO rollouts</td></tr>
