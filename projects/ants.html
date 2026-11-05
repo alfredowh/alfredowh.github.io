@@ -42,6 +42,10 @@
   .status-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
   .results-table th:nth-child(2), .results-table td:nth-child(2) { width: 5.5rem; text-align: center; }
   .results-table th:nth-child(3), .results-table td:nth-child(3) { width: 30%; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .cols .fig { margin: 0.5rem 0; }
+  @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+  .claim { font-size: 1.05rem; }
   .container > h3 { margin-top: 1.8rem; }
   .doc-link { margin-top: 0.6rem; font-size: 0.9rem; }
   @media print {
@@ -70,112 +74,188 @@
 <header class="project-header">
   <div class="container">
     <h1>ANTS: Adversarial Agentic Task Synthesis</h1>
-    <p class="meta">Team project · Meta Global Hackathon · Work in progress</p>
+    <p class="meta">Team project with <a href="https://www.linkedin.com/in/daniel-totolici" target="_blank" rel="noopener">Daniel Totolici</a> · Submitted to the Meta Global AI Hackathon</p>
     <ul class="tag-list">
-      <li class="tag">SAM 3.1</li>
+      <li class="tag">Code as policy</li>
       <li class="tag">Muse Wonder</li>
       <li class="tag">Muse Spark</li>
-      <li class="tag">LIBERO</li>
+      <li class="tag">SAM 3/3.1</li>
+      <li class="tag">LIBERO-Pro</li>
     </ul>
   </div>
 </header>
 
 <section>
   <div class="container">
-    <h2>Overview</h2>
+    <h2>One Demo In, a Hardened Robot Program Out</h2>
     <p class="status-row">
-      <span class="badge">Work in progress</span>
-      <span class="badge">Meta Global Hackathon</span>
+      <span class="badge">Submitted</span>
+      <span class="badge">Meta Global AI Hackathon</span>
+    </p>
+    <p class="claim">
+      Show a robot a task <strong>once on video</strong>. A frozen model writes the
+      robot program. A second system attacks it until the edge cases are covered.
+      <strong>Nothing is trained.</strong> The skill improves through context only.
     </p>
     <p>
-      <strong>Idea:</strong> teach a robot a task from <strong>one demo</strong>,
-      then let an adversary break the skill. A frozen model writes the policy.
-      Nothing is trained. The skill improves through <strong>context</strong> only.
+      <strong>Submitted to the Meta Global AI Hackathon</strong>, theme
+      <em>Push the Frontier</em>: use Meta's models to tackle challenges in
+      robotics and beyond. ANTS pushes it with Meta's own models in both
+      systems: Muse Wonder writes the robot program, Muse Spark plans and
+      diagnoses the attacks, and SAM 3/3.1 gives the robot its perception.
     </p>
-    <p>
-      ANTS is a project for the
-      <a href="https://dev.meta.ai/events/global-hackathon" target="_blank" rel="noopener">Meta Global Hackathon</a>.
-      The code is on
-      <a href="https://github.com/alfredowh/ANTS" target="_blank" rel="noopener">GitHub</a>.
-    </p>
-    <p class="doc-link"><a href="../assets/pdf/ANTS.pdf">Download this page as PDF</a></p>
     <figure class="fig">
-      <img loading="lazy" src="../assets/images/projects/ants/architecture.png" alt="ANTS architecture: System 1 synthesizer, System 2 adversary, closed loop" onclick="this.classList.toggle('zoomed')">
-      <figcaption>ANTS architecture: System 1 writes the skill, System 2 tests it, and the loop feeds each failure back.</figcaption>
+      <img loading="lazy" src="../assets/images/projects/ants/architecture.svg" alt="ANTS architecture: System 1 synthesizer, System 2 adversary, regression gate" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Two systems, one goal: a robust policy. Solid boxes are built, dashed boxes are planned.</figcaption>
     </figure>
-    <h3>Problem</h3>
-    <p>
-      One robot, one task, one policy. Each new task or robot needs new data
-      and fine-tuning. Data is the bottleneck.
+    <p class="doc-link">
+      <a href="https://github.com/alfredowh/ANTS" target="_blank" rel="noopener">Code on GitHub</a> ·
+      <a href="https://dev.meta.ai/events/global-hackathon" target="_blank" rel="noopener">Hackathon page</a> ·
+      <a href="../assets/pdf/ANTS.pdf">Page as PDF</a>
     </p>
   </div>
 </section>
 
 <section>
   <div class="container">
-    <h2>The Closed Loop</h2>
-    <ol>
-      <li><strong>Write (System 1):</strong> SAM 3.1 tracks the hand, the object and the gripper in one demo video. Muse Wonder turns the result into a policy.</li>
-      <li><strong>Break (System 2):</strong> Muse Spark plans tests. A LIBERO simulation runs them. Muse Spark explains each failure.</li>
-      <li><strong>Fix:</strong> each failure becomes a constraint. The constraint goes into the context of the generator, never into the weights. The generator writes a new policy.</li>
-      <li><strong>Gate:</strong> a new policy is accepted only if it is no worse on every case seen so far and better on at least one.</li>
-      <li><strong>Stop or ask:</strong> stop when every category is robust. If the generator stalls, ask a human for one targeted demo.</li>
-    </ol>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <h2>Failure Cases, Not Random Tests</h2>
+    <h2>A Human Video as the Prompt</h2>
     <p>
-      The adversary does <strong>not</strong> pick test cases at random. It
-      looks for <strong>failure cases</strong>. It spends the test budget on
-      the categories that are most likely to break the policy. Each test stays
-      inside a bounded severity.
+      A text prompt says <em>"put the bowl on the plate"</em>. It cannot say
+      <em>where</em> to grasp, <em>how high</em> to carry or <em>where</em> to
+      release. A human video can. We track the hand and objects in one demo and
+      turn them into numbers relative to object size: grasp the rim, approach
+      from above, carry height, release over the plate. The VLM writes the robot
+      program from these numbers instead of guessing them.
     </p>
-    <p>
-      The gate keeps the result safe. A policy that fixes one failure case
-      cannot break a case that passed before. Robustness never goes down.
-    </p>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <h2>Software Stack</h2>
+    <div class="cols">
+      <figure class="fig">
+        <img loading="lazy" src="../assets/images/projects/ants/demo_overlay.gif" alt="Human demo with hand skeleton, markers and gripper opening drawn over the video" onclick="this.classList.toggle('zoomed')">
+        <figcaption>One human demo, with what the tracker reads.</figcaption>
+      </figure>
+      <figure class="fig">
+        <img loading="lazy" src="../assets/images/projects/ants/demo_robot.gif" alt="Franka arm puts the bowl on the plate in simulation" onclick="this.classList.toggle('zoomed')">
+        <figcaption>v0, the first candidate policy generated and tested by System 1, run in LIBERO-Pro.</figcaption>
+      </figure>
+    </div>
     <table class="results-table">
-      <thead><tr><th>Block</th><th>System</th><th>Tool</th></tr></thead>
+      <thead><tr><th>Prompt to the generator</th><th>Solved</th><th>Note</th></tr></thead>
       <tbody>
-        <tr><td>Hand and object segmentation</td><td>1</td><td>SAM 3.1</td></tr>
-        <tr><td>Policy synthesis, with experience memory</td><td>1</td><td>Muse Wonder (via Muse Code)</td></tr>
-        <tr><td>Test planner, uses the failure history</td><td>2</td><td>Muse Spark</td></tr>
-        <tr><td>Rollout of the policy under a perturbation</td><td>2</td><td>LIBERO simulation</td></tr>
-        <tr><td>Failure diagnosis (grasp miss, collision, timeout)</td><td>2</td><td>Muse Spark</td></tr>
+        <tr><td>Text only</td><td>0/10</td><td>2 samples, 5 acceptance seeds each</td></tr>
+        <tr><td>Text + human video</td><td>5/5</td><td>best of 2 samples, the other sample failed</td></tr>
       </tbody>
     </table>
+    <p>
+      This is an early hint, not a result: one task, one clip, two samples per
+      arm. A full demo versus no-demo evaluation is the first item of the
+      outlook. The demo can also come from teleoperation, not only from video.
+    </p>
   </div>
 </section>
 
 <section>
   <div class="container">
-    <h2>Link to hurobo</h2>
+    <h2>System 1 and System 2, Working on One Objective</h2>
     <p>
-      <a href="hurobo.html">hurobo</a> turns a phone video of a human hand into
-      robot demos in LIBERO. ANTS also starts from a human video and runs in
-      LIBERO. The clip below is from hurobo: the recorded human demo (left)
-      beside its robot replay (right).
+      Two systems run independently, talk through a small contract and share one
+      goal: a policy that does not break.
     </p>
-    <figure class="fig narrow">
-      <img loading="lazy" src="../assets/images/projects/ants/sync-human-robot.gif" alt="Recorded human demo beside its LIBERO robot replay, synchronised" onclick="this.classList.toggle('zoomed')">
-      <figcaption>Human demo and robot replay, synchronised (from <a href="hurobo.html">hurobo</a>).</figcaption>
+    <ul>
+      <li><strong>System 1, policy generator (synthesizer):</strong> turns the prompt (human video, teleop or text) into a <strong>program as policy</strong>, checks it in simulation and repairs it.</li>
+      <li><strong>System 2, failure case generator (adversary), built by <a href="https://www.linkedin.com/in/daniel-totolici" target="_blank" rel="noopener">Daniel Totolici</a>:</strong> looks for the cases most likely to break the policy. It picks the weakest category, proposes perturbations within a bounded severity (pose, size, physics, actuation, camera, lighting), runs them and diagnoses each failure into a rule.</li>
+      <li><strong>Gate:</strong> every rule goes back into System 1's context. A rewrite is accepted only if it is no worse on all cases seen so far and better on one.</li>
+    </ul>
+    <p>
+      Each system makes the other better: the generator hardens the program,
+      the adversary keeps finding what the hardening missed. When the loop
+      stalls it asks a human, and the answer becomes a rule.
+    </p>
+    <p class="note"><em>Note: I worked on the synthesizer and the demo-to-program idea. I did not look into the technical details of the adversary, which is Daniel's part.</em></p>
+    <figure class="fig">
+      <img loading="lazy" src="../assets/images/projects/ants/architecture-subblocks.svg" alt="ANTS development modules and interfaces" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Modules and interfaces of the development loop.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img loading="lazy" src="../assets/images/projects/ants/prompt-authoring-detail.svg" alt="Author prompt inside System 1: demo frames and DemoSpec become a reusable task prompt" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Planned: an author step turns the demo evidence into a reusable task prompt before the program is written.</figcaption>
     </figure>
   </div>
 </section>
 
 <section>
   <div class="container">
-    <h2>Results</h2>
-    <p>Results coming. All numbers will come from logged runs on a held-out test set.</p>
+    <h2>What the Adversary Found</h2>
+    <figure class="fig">
+      <img loading="lazy" src="../assets/images/projects/ants/size_failure.png" alt="Nominal run versus a plate scaled 1.7 times: carry, release and end" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Nominal (top) versus plate ×1.7 (bottom), same seed.</figcaption>
+    </figure>
+    <p>
+      <strong>v0</strong> is the first candidate policy generated and tested by
+      System 1. Each accepted rewrite becomes the next version (v1, v2, ...).
+      With a larger plate, SAM 3 measured the plate 11 cm tall instead of 2 cm.
+      The program released the bowl about 9 cm too high. Muse Spark traced it to
+      one line, <code>plate_top_z = max(...)</code>, Muse Wonder rewrote it and
+      the gate accepted the fix.
+    </p>
+    <table class="results-table">
+      <thead><tr><th>Question</th><th>Result</th><th>From</th></tr></thead>
+      <tbody>
+        <tr><td>One demo gives a working program?</td><td>v0 passes 47/50 held-out perturbed cases</td><td>759 LIBERO rollouts</td></tr>
+        <tr><td>Adversary finds a real weak spot?</td><td>0 failures in 599 rollouts with correct perception, 11 in 26 with a mis-read plate</td><td>one blind spot</td></tr>
+        <tr><td>Gate blocks bad fixes?</td><td>3 of 3 bad rewrites rejected</td><td>logged runs</td></tr>
+        <tr><td>Fix generalises?</td><td><strong>Not yet.</strong> Held-out size cases: v0 49/50, v1 47/50</td><td>gate saw only 4 cases</td></tr>
+        <tr><td>Adaptive beats uniform testing?</td><td><strong>Not answered.</strong> 2/200 vs 1/200 failures</td><td>v0 fails too rarely</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Held-out cases use scene seeds the system never tuned on. Cost: about
+      $12 of model tokens for the whole study. Limits are stated, not hidden.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Add-on: Recovery Policy</h2>
+    <p>
+      A single policy that handles every edge case becomes long, hard to read
+      and hard to reuse. The architecture can instead let System 1 write a
+      <strong>main policy plus small recovery policies</strong>. This works in
+      the development phase and later in deployment: a production failure is
+      reproduced in simulation, the adversary hardens the fix, and the new
+      recovery skill is released after validation. A final step could compose
+      main and recovery skills into a <strong>behavior tree</strong>, which keeps
+      each part modular and reusable. Not built yet.
+    </p>
+    <figure class="fig">
+      <img loading="lazy" src="../assets/images/projects/ants/deployment-concept.svg" alt="Concept: robot deployment, simulation reproduction and optional adversarial hardening" onclick="this.classList.toggle('zoomed')">
+      <figcaption>Deployment and recovery concept (not implemented).</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Outlook</h2>
+    <ul>
+      <li><strong>Comprehensive evaluation</strong> of demo versus no demo, and a broader adversary, across more tasks and acceptance sets. Current tests are a start, not comprehensive.</li>
+      <li><strong>Better planning:</strong> cuRobo trajectory optimisation against a static 3D map of the scene. A scene reconstruction probe (TSDF to ESDF) already works.</li>
+      <li><strong>Sim-to-real gap:</strong> today the gap is assumed to be zero, so robust in simulation means robust in reality. Next: gap-aware test cases, or a real2sim digital twin that replicates the real scene 1:1.</li>
+      <li><strong>Deployment phase:</strong> today ANTS covers policy development only.</li>
+      <li><strong>ANTS Studio demo: coming soon!</strong> One window to watch the whole loop: the synthesizer chat with live cameras, and the adversary's attacks, replays and versions.</li>
+      <li><strong>Memory:</strong> store hardened policies and share skills across tasks.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Team</h2>
+    <p>Alfredo: synthesizer and demo prompt. Daniel: adversary. 
+      <a href="https://www.linkedin.com/in/alfredowijaya" target="_blank" rel="noopener">Alfredo Wijaya Hardjoprawiro</a> and
+      <a href="https://www.linkedin.com/in/daniel-totolici" target="_blank" rel="noopener">Daniel Totolici</a>.
+      Demonstrations come from <a href="hurobo.html">hurobo</a>, which turns
+      phone videos of a human hand into robot demos.
+    </p>
   </div>
 </section>
 
