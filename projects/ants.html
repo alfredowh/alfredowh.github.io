@@ -47,6 +47,8 @@
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .cols .fig { margin: 0.5rem 0; }
   @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+  .tagline { display: inline-block; max-width: 100%; background: var(--accent); color: var(--accent-soft); padding: 0.3rem 0.8rem; border-radius: 999px; font-size: min(0.9rem, calc((100vw - 5rem) / 60)); font-weight: 400; font-style: normal; white-space: nowrap; margin: 0 0 0.75rem; }
+  .meta-logo { height: calc(1.1em - 2pt); width: auto; vertical-align: middle; margin-right: 0.12em; }
   .claim { font-size: 1.05rem; }
   .container > h3 { margin-top: 1.8rem; }
   .doc-link { margin-top: 0.6rem; font-size: 0.9rem; }
@@ -77,7 +79,8 @@
 <header class="project-header">
   <div class="container">
     <h1>ANTS: Adversarial Agentic Task Synthesis</h1>
-    <p class="meta">Team project with <a href="https://www.linkedin.com/in/daniel-totolici" target="_blank" rel="noopener">Daniel Totolici</a> · Submitted to the Meta Global AI Hackathon</p>
+    <p class="tagline">Agentic Physical AI Framework for Industrial Automation: End-to-End Robot Policy Development, Hardening and Deployment</p>
+    <p class="meta">Team project with <a href="https://www.linkedin.com/in/daniel-totolici" target="_blank" rel="noopener">Daniel Totolici</a> · Submitted to the <img class="meta-logo" src="../assets/images/meta-logo.svg" alt="Meta">Meta Global AI Hackathon</p>
     <ul class="tag-list">
       <li class="tag">Code as policy</li>
       <li class="tag">Muse Wonder</li>
@@ -93,7 +96,6 @@
     <h2>One Demo In, a Hardened Robot Program Out</h2>
     <p class="status-row">
       <span class="badge">Submitted</span>
-      <span class="badge">Meta Global AI Hackathon</span>
     </p>
     <p class="claim">
       Show a robot a task <strong>once on video</strong>. A frozen model writes the
@@ -101,8 +103,8 @@
       <strong>Nothing is trained.</strong> The skill improves through context only.
     </p>
     <p>
-      <strong>Submitted to the Meta Global AI Hackathon</strong>, theme
-      <em>Push the Frontier</em>: use Meta's models to tackle challenges in
+      <strong>Submitted to the <img class="meta-logo" src="../assets/images/meta-logo.svg" alt="Meta">Meta Global AI Hackathon</strong>, theme
+      <em>Push the Frontier</em>: use <img class="meta-logo" src="../assets/images/meta-logo.svg" alt="Meta">Meta's models to tackle challenges in
       robotics and beyond. ANTS pushes it with Meta's own models in both
       systems: Muse Wonder writes the robot program, Muse Spark plans and
       diagnoses the attacks, and SAM 3/3.1 gives the robot its perception.
