@@ -114,7 +114,7 @@
     <p class="doc-link">
       <a href="https://github.com/alfredowh/ANTS" target="_blank" rel="noopener">Code on GitHub</a> ·
       <a href="https://dev.meta.ai/events/global-hackathon" target="_blank" rel="noopener">Hackathon page</a> ·
-      <a href="../assets/pdf/ANTS.pdf">Page as PDF</a>
+      <a href="../pdf/ants.pdf">Page as PDF</a>
     </p>
   </div>
 </section>
@@ -139,6 +139,22 @@
         <img loading="lazy" src="../assets/images/projects/ants/demo_robot.gif" alt="Franka arm puts the bowl on the plate in simulation" onclick="this.classList.toggle('zoomed')">
         <figcaption>v0, the first candidate policy generated and tested by System 1, run in LIBERO-Pro.</figcaption>
       </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Human Video Prompt vs. Text-Only Prompt</h2>
+    <div class="cols">
+      <div>
+        <h3>Human video prompt</h3>
+        <p><em>"Put the bowl on the plate"</em> plus one tracked human demo. The numbers (grasp point, approach direction, carry height, release spot) come from the video, relative to object size.</p>
+      </div>
+      <div>
+        <h3>Text-only prompt (no demo)</h3>
+        <p><em>"Put the bowl on the plate"</em> and nothing else. The VLM has to guess where to grasp, how high to carry and where to release.</p>
+      </div>
     </div>
     <div class="cols">
       <figure class="fig">
