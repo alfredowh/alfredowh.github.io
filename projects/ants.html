@@ -52,7 +52,23 @@
   .claim { font-size: 1.05rem; }
   .container > h3 { margin-top: 1.8rem; }
   .doc-link { margin-top: 0.6rem; font-size: 0.9rem; }
+  .studio-video { display: block; width: 100%; border-radius: 6px; background: #000; margin: 1.2rem 0 0.4rem; }
+  .frame-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .frame-strip figure { margin: 0; }
+  .frame-strip .strip-title { grid-column: 1 / -1; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0.6rem 0 -0.3rem; }
+  .frame-strip img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: contain; background: var(--border); border: 1px solid var(--border); border-radius: 4px; cursor: zoom-in; }
+  .frame-strip img.zoomed { aspect-ratio: auto; height: auto; position: fixed; top: 50%; left: 50%; width: auto; max-width: 90vw; max-height: 90vh; transform: translate(-50%, -50%); z-index: 1000; cursor: zoom-out; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85); }
+  .frame-strip figcaption { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem; line-height: 1.35; }
+  .frame-strip figcaption b { color: var(--text); }
+  @media (max-width: 640px) { .frame-strip { grid-template-columns: 1fr; } }
   @media print {
+    .studio-video, .studio-video-caption { display: none !important; }
+    .frame-strip { gap: 0.5rem; }
+    section.studio-section { break-inside: auto; }
+    .frame-strip figure { break-inside: avoid; }
+    .frame-strip .strip-title { break-after: avoid; page-break-after: avoid; }
+    .frame-strip img { cursor: default; }
+    .frame-strip figcaption { font-size: 0.72rem; }
     .site-nav, .doc-link { display: none !important; }
     section { padding: 0.5rem 0; break-inside: avoid; }
     .project-header { padding: 1rem 0; }
@@ -205,6 +221,35 @@
       <img loading="lazy" src="../assets/images/projects/ants/prompt-authoring-detail.svg" alt="Author prompt inside System 1: demo frames and DemoSpec become a reusable task prompt" onclick="this.classList.toggle('zoomed')">
       <figcaption>Planned: an author step turns the demo evidence into a reusable task prompt before the program is written.</figcaption>
     </figure>
+  </div>
+</section>
+
+<section class="studio-section">
+  <div class="container">
+    <h2>ANTS Studio: One Run, End to End</h2>
+    <p>
+      ANTS Studio is the console for the whole loop. One chat command starts a run from a phone
+      clip; every stage shows its status live, the generated program runs in simulation next to
+      the human demo, and the run waits for a person before the adversary attacks it.
+    </p>
+    <video class="studio-video" controls preload="metadata" poster="../assets/images/projects/ants/studio/poster.jpg">
+      <source src="../assets/images/projects/ants/studio/ants_studio_demo.mp4" type="video/mp4">
+    </video>
+    <p class="studio-video-caption" style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:0">Walkthrough of one policy development run in ANTS Studio (3 min, with narration). The repair frames come from a logged run with four repairs; the Adversary frames from a closed-loop run on the LIBERO simulator (2 attacks, Muse Spark off).</p>
+    <div class="frame-strip">
+      <div class="strip-title">Show once: System 1</div>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame1.jpg" alt="Chat command with the task and the attached phone clip" onclick="this.classList.toggle('zoomed')"><figcaption><b>One command:</b> the task in words plus one phone clip.</figcaption></figure>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame2.jpg" alt="Process flow during demo extraction" onclick="this.classList.toggle('zoomed')"><figcaption><b>Process flow:</b> every stage of both systems, live.</figcaption></figure>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame3.jpg" alt="Live simulator view under the human demo" onclick="this.classList.toggle('zoomed')"><figcaption><b>Live rollout:</b> the program runs in simulation next to the demo.</figcaption></figure>
+      <div class="strip-title">Repair loop: one logged run, four repairs</div>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame4.jpg" alt="Attempt 1: why the program failed and what the model changed" onclick="this.classList.toggle('zoomed')"><figcaption><b>Why it failed:</b> the model explains the failure from rollout evidence.</figcaption></figure>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame5.jpg" alt="Attempt 1: program diff against attempt 0" onclick="this.classList.toggle('zoomed')"><figcaption><b>The diff:</b> every change to the program is readable.</figcaption></figure>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame6.jpg" alt="Attempt 4 passed with rollout keyframes" onclick="this.classList.toggle('zoomed')"><figcaption><b>It passes:</b> attempt 4 succeeds on the debug seed.</figcaption></figure>
+      <div class="strip-title">Adversary tab: System 2</div>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame7.jpg" alt="Harden view with attack summary and certification board" onclick="this.classList.toggle('zoomed')"><figcaption><b>Harden:</b> attack log, outcome counts and per-category certification.</figcaption></figure>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame8.jpg" alt="Replay view with rollout videos, call timeline and why the attack was chosen" onclick="this.classList.toggle('zoomed')"><figcaption><b>Replay:</b> attacked vs nominal video, call timeline, why this category.</figcaption></figure>
+      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame9.jpg" alt="Versions view with version history and gate decisions" onclick="this.classList.toggle('zoomed')"><figcaption><b>Versions:</b> version history and every gate decision (none reached the gate here).</figcaption></figure>
+    </div>
   </div>
 </section>
 
