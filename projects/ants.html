@@ -63,6 +63,12 @@
     background: linear-gradient(to top, rgba(12, 16, 24, 1) 0%, rgba(12, 16, 24, 0.75) 45%, rgba(12, 16, 24, 0) 100%); pointer-events: none; }
   .frame-row figcaption b { color: #fff; }
   @media (max-width: 640px) { .frame-row { grid-auto-flow: row; grid-template-columns: 1fr 1fr; } }
+  .lightbox { position: fixed; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; padding: 3rem 1rem 1.5rem; cursor: zoom-out; }
+  .lightbox[hidden] { display: none; }
+  .lightbox img { max-width: 94vw; max-height: 84vh; object-fit: contain; border-radius: 4px; background: #fff; cursor: default; }
+  .lightbox p { color: #e8eaee; font-size: 0.9rem; max-width: 70ch; text-align: center; margin: 0; }
+  .lightbox button { position: absolute; top: 0.8rem; right: 1rem; width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.12); color: #fff; font-size: 1.4rem; line-height: 1; cursor: pointer; }
+  .lightbox button:hover, .lightbox button:focus-visible { background: rgba(255, 255, 255, 0.28); outline: 2px solid #fff; }
   @media print {
     .studio-video, .studio-video-caption { display: none !important; }
     section.studio-section { break-inside: auto; padding-bottom: 0; }
@@ -355,6 +361,33 @@
   </div>
 </footer>
 
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged image">
+  <button type="button" id="lightbox-close" aria-label="Close (Esc)">&times;</button>
+  <img id="lightbox-img" alt="">
+  <p id="lightbox-cap"></p>
+</div>
+<script>
+(function () {
+  const box = document.getElementById("lightbox"), img = document.getElementById("lightbox-img");
+  const cap = document.getElementById("lightbox-cap"), btn = document.getElementById("lightbox-close");
+  let last = null;
+  function open(src) {
+    last = src; img.src = src.currentSrc || src.src; img.alt = src.alt;
+    const fc = src.closest("figure")?.querySelector("figcaption");
+    cap.textContent = fc ? fc.textContent : "";
+    box.hidden = false; document.body.style.overflow = "hidden"; btn.focus();
+  }
+  function close() { box.hidden = true; img.src = ""; document.body.style.overflow = ""; last?.focus?.(); }
+  document.querySelectorAll(".fig img, .frame-row img").forEach((el) => {
+    el.removeAttribute("onclick"); el.classList.remove("zoomed"); el.tabIndex = 0;
+    el.addEventListener("click", () => open(el));
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(el); } });
+  });
+  btn.addEventListener("click", close);
+  box.addEventListener("click", (e) => { if (e.target !== img) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !box.hidden) close(); });
+})();
+</script>
 <script src="../js/main.js"></script>
 </body>
 </html>
