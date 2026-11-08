@@ -53,17 +53,17 @@
   .container > h3 { margin-top: 1.8rem; }
   .doc-link { margin-top: 0.6rem; font-size: 0.9rem; }
   .studio-video { display: block; width: 100%; border-radius: 6px; background: #000; margin: 1.2rem 0 0.4rem; }
-  .frame-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .frame-strip { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 0.3rem; row-gap: 0.45rem; margin: 1rem 0; }
   .frame-strip figure { margin: 0; }
-  .frame-strip .strip-title { grid-column: 1 / -1; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0.6rem 0 -0.3rem; }
-  .frame-strip img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: contain; background: var(--border); border: 1px solid var(--border); border-radius: 4px; cursor: zoom-in; }
+  .frame-strip .strip-title { grid-column: 1 / -1; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0.5rem 0 -0.2rem; }
+  .frame-strip img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: contain; background: #f4f5f7; border: 1px solid #c9ced6; border-radius: 3px; cursor: zoom-in; }
   .frame-strip img.zoomed { aspect-ratio: auto; height: auto; position: fixed; top: 50%; left: 50%; width: auto; max-width: 90vw; max-height: 90vh; transform: translate(-50%, -50%); z-index: 1000; cursor: zoom-out; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85); }
-  .frame-strip figcaption { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem; line-height: 1.35; }
+  .frame-strip figcaption { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.3; }
   .frame-strip figcaption b { color: var(--text); }
   @media (max-width: 640px) { .frame-strip { grid-template-columns: 1fr; } }
   @media print {
     .studio-video, .studio-video-caption { display: none !important; }
-    .frame-strip { gap: 0.5rem; }
+    .frame-strip { column-gap: 0.25rem; row-gap: 0.35rem; }
     section.studio-section { break-inside: auto; }
     .frame-strip figure { break-inside: avoid; }
     .frame-strip .strip-title { break-after: avoid; page-break-after: avoid; }
