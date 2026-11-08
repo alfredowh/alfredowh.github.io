@@ -53,24 +53,28 @@
   .container > h3 { margin-top: 1.8rem; }
   .doc-link { margin-top: 0.6rem; font-size: 0.9rem; }
   .studio-video { display: block; width: 100%; border-radius: 6px; background: #000; margin: 1.2rem 0 0.4rem; }
-  .frame-strip { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 0.3rem; row-gap: 0.45rem; margin: 1rem 0; }
-  .frame-strip figure { margin: 0; }
-  .frame-strip .strip-title { grid-column: 1 / -1; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0.5rem 0 -0.2rem; }
-  .frame-strip img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: contain; background: #f4f5f7; border: 1px solid #c9ced6; border-radius: 3px; cursor: zoom-in; }
-  .frame-strip img.zoomed { aspect-ratio: auto; height: auto; position: fixed; top: 50%; left: 50%; width: auto; max-width: 90vw; max-height: 90vh; transform: translate(-50%, -50%); z-index: 1000; cursor: zoom-out; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85); }
-  .frame-strip figcaption { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.3; }
-  .frame-strip figcaption b { color: var(--text); }
-  @media (max-width: 640px) { .frame-strip { grid-template-columns: 1fr; } }
+  .frame-strip { display: grid; row-gap: 0.3rem; margin: 1rem 0 0.4rem; }
+  .frame-strip .strip-title { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0.45rem 0 0; }
+  .frame-row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.3rem; }
+  .frame-row figure { position: relative; margin: 0; overflow: hidden; border: 1px solid #c9ced6; border-radius: 3px; background: #f4f5f7; }
+  .frame-row img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: contain; cursor: zoom-in; }
+  .frame-row img.zoomed { aspect-ratio: auto; height: auto; width: auto; position: fixed; top: 50%; left: 50%; max-width: 90vw; max-height: 90vh; transform: translate(-50%, -50%); z-index: 1000; cursor: zoom-out; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85); }
+  .frame-row figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.4rem 0.5rem 0.35rem; color: #fff; font-size: 0.74rem; line-height: 1.3;
+    background: linear-gradient(to top, rgba(12, 16, 24, 1) 0%, rgba(12, 16, 24, 0.75) 45%, rgba(12, 16, 24, 0) 100%); pointer-events: none; }
+  .frame-row figcaption b { color: #fff; }
+  @media (max-width: 640px) { .frame-row { grid-auto-flow: row; grid-template-columns: 1fr 1fr; } }
   @media print {
     .studio-video, .studio-video-caption { display: none !important; }
-    .frame-strip { column-gap: 0.25rem; row-gap: 0.35rem; }
-    section.studio-section { break-inside: auto; }
-    .frame-strip figure { break-inside: avoid; }
+    section.studio-section { break-inside: auto; padding-bottom: 0; }
+    section.studio-section .container > p { margin-bottom: 0.4rem; }
+    .frame-row { break-inside: avoid; }
     .frame-strip .strip-title { break-after: avoid; page-break-after: avoid; }
-    .frame-strip img { cursor: default; }
-    .frame-strip figcaption { font-size: 0.72rem; }
+    .frame-row img { cursor: default; }
+    .frame-row figcaption { font-size: 0.6rem; padding: 0.8rem 0.35rem 0.2rem; }
     .site-nav, .doc-link { display: none !important; }
-    section { padding: 0.5rem 0; break-inside: avoid; }
+    section { padding: 0.5rem 0; break-inside: auto; }
+    h2, h3, .strip-title { break-after: avoid; page-break-after: avoid; }
+    .cols { break-inside: avoid; }
     .project-header { padding: 1rem 0; }
     .fig, table { break-inside: avoid; }
     .fig img { cursor: default; max-height: 85mm; width: auto; }
@@ -134,6 +138,42 @@
       <a href="https://dev.meta.ai/events/global-hackathon" target="_blank" rel="noopener">Hackathon page</a> ·
       <a href="../pdf/ants.pdf">Page as PDF</a>
     </p>
+  </div>
+</section>
+
+<section class="studio-section">
+  <div class="container">
+    <h2>ANTS Studio: One Run, End to End</h2>
+    <p>
+      ANTS Studio is the console for the whole loop. One chat command starts a run from a phone
+      clip; every stage shows its status live, the generated program runs in simulation next to
+      the human demo, and the run waits for a person before the adversary attacks it.
+    </p>
+    <video class="studio-video" controls preload="metadata" poster="../assets/images/projects/ants/studio/poster.jpg">
+      <source src="../assets/images/projects/ants/studio/ants_studio_demo.mp4" type="video/mp4">
+    </video>
+    <p class="studio-video-caption" style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:0">Walkthrough of one policy development run in ANTS Studio (3 min, with narration). The repair frames come from a logged run with four repairs; the Adversary frames from a closed-loop run on the LIBERO simulator (2 attacks, Muse Spark off).</p>
+    <div class="frame-strip">
+      <div class="strip-title">Show once: System 1</div>
+      <div class="frame-row">
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame0.jpg" alt="Human demo with hand skeleton, markers, TCP path and gripper opening" onclick="this.classList.toggle('zoomed')"><figcaption><b>Human demo:</b> hand, TCP path and gripper, from one phone clip.</figcaption></figure>
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame1.jpg" alt="Chat command with the task and the attached phone clip" onclick="this.classList.toggle('zoomed')"><figcaption><b>One command:</b> the task in words plus the clip.</figcaption></figure>
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame2.jpg" alt="Process flow during demo extraction" onclick="this.classList.toggle('zoomed')"><figcaption><b>Process flow:</b> every stage of both systems, live.</figcaption></figure>
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame3.jpg" alt="Live simulator view under the human demo" onclick="this.classList.toggle('zoomed')"><figcaption><b>Live rollout:</b> the program runs in simulation next to the demo.</figcaption></figure>
+      </div>
+      <div class="strip-title">Repair loop: one logged run, four repairs</div>
+      <div class="frame-row">
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame4.jpg" alt="Attempt 1: why the program failed and what the model changed" onclick="this.classList.toggle('zoomed')"><figcaption><b>Why it failed:</b> the model explains the failure from rollout evidence.</figcaption></figure>
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame5.jpg" alt="Attempt 1: program diff against attempt 0" onclick="this.classList.toggle('zoomed')"><figcaption><b>The diff:</b> every change to the program is readable.</figcaption></figure>
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame6.jpg" alt="Attempt 4 passed with rollout keyframes" onclick="this.classList.toggle('zoomed')"><figcaption><b>It passes:</b> attempt 4 succeeds on the debug seed.</figcaption></figure>
+      </div>
+      <div class="strip-title">Adversary tab: System 2</div>
+      <div class="frame-row">
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame7.jpg" alt="Harden view with attack summary and certification board" onclick="this.classList.toggle('zoomed')"><figcaption><b>Harden:</b> attack log, outcome counts and per-category certification.</figcaption></figure>
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame8.jpg" alt="Replay view with rollout videos, call timeline and why the attack was chosen" onclick="this.classList.toggle('zoomed')"><figcaption><b>Replay:</b> attacked vs nominal video, call timeline, why this category.</figcaption></figure>
+        <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame9.jpg" alt="Versions view with version history and gate decisions" onclick="this.classList.toggle('zoomed')"><figcaption><b>Versions:</b> version history and every gate decision (none reached the gate here).</figcaption></figure>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -221,35 +261,6 @@
       <img loading="lazy" src="../assets/images/projects/ants/prompt-authoring-detail.svg" alt="Author prompt inside System 1: demo frames and DemoSpec become a reusable task prompt" onclick="this.classList.toggle('zoomed')">
       <figcaption>Planned: an author step turns the demo evidence into a reusable task prompt before the program is written.</figcaption>
     </figure>
-  </div>
-</section>
-
-<section class="studio-section">
-  <div class="container">
-    <h2>ANTS Studio: One Run, End to End</h2>
-    <p>
-      ANTS Studio is the console for the whole loop. One chat command starts a run from a phone
-      clip; every stage shows its status live, the generated program runs in simulation next to
-      the human demo, and the run waits for a person before the adversary attacks it.
-    </p>
-    <video class="studio-video" controls preload="metadata" poster="../assets/images/projects/ants/studio/poster.jpg">
-      <source src="../assets/images/projects/ants/studio/ants_studio_demo.mp4" type="video/mp4">
-    </video>
-    <p class="studio-video-caption" style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:0">Walkthrough of one policy development run in ANTS Studio (3 min, with narration). The repair frames come from a logged run with four repairs; the Adversary frames from a closed-loop run on the LIBERO simulator (2 attacks, Muse Spark off).</p>
-    <div class="frame-strip">
-      <div class="strip-title">Show once: System 1</div>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame1.jpg" alt="Chat command with the task and the attached phone clip" onclick="this.classList.toggle('zoomed')"><figcaption><b>One command:</b> the task in words plus one phone clip.</figcaption></figure>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame2.jpg" alt="Process flow during demo extraction" onclick="this.classList.toggle('zoomed')"><figcaption><b>Process flow:</b> every stage of both systems, live.</figcaption></figure>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame3.jpg" alt="Live simulator view under the human demo" onclick="this.classList.toggle('zoomed')"><figcaption><b>Live rollout:</b> the program runs in simulation next to the demo.</figcaption></figure>
-      <div class="strip-title">Repair loop: one logged run, four repairs</div>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame4.jpg" alt="Attempt 1: why the program failed and what the model changed" onclick="this.classList.toggle('zoomed')"><figcaption><b>Why it failed:</b> the model explains the failure from rollout evidence.</figcaption></figure>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame5.jpg" alt="Attempt 1: program diff against attempt 0" onclick="this.classList.toggle('zoomed')"><figcaption><b>The diff:</b> every change to the program is readable.</figcaption></figure>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame6.jpg" alt="Attempt 4 passed with rollout keyframes" onclick="this.classList.toggle('zoomed')"><figcaption><b>It passes:</b> attempt 4 succeeds on the debug seed.</figcaption></figure>
-      <div class="strip-title">Adversary tab: System 2</div>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame7.jpg" alt="Harden view with attack summary and certification board" onclick="this.classList.toggle('zoomed')"><figcaption><b>Harden:</b> attack log, outcome counts and per-category certification.</figcaption></figure>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame8.jpg" alt="Replay view with rollout videos, call timeline and why the attack was chosen" onclick="this.classList.toggle('zoomed')"><figcaption><b>Replay:</b> attacked vs nominal video, call timeline, why this category.</figcaption></figure>
-      <figure><img loading="lazy" src="../assets/images/projects/ants/studio/frame9.jpg" alt="Versions view with version history and gate decisions" onclick="this.classList.toggle('zoomed')"><figcaption><b>Versions:</b> version history and every gate decision (none reached the gate here).</figcaption></figure>
-    </div>
   </div>
 </section>
 
