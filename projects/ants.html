@@ -63,6 +63,15 @@
     background: linear-gradient(to top, rgba(12, 16, 24, 1) 0%, rgba(12, 16, 24, 0.75) 45%, rgba(12, 16, 24, 0) 100%); pointer-events: none; }
   .frame-row figcaption b { color: #fff; }
   @media (max-width: 640px) { .frame-row { grid-auto-flow: row; grid-template-columns: 1fr 1fr; } }
+  .video-print { display: none; }
+  @media print {
+    .video-print { display: block; margin: 0.6rem 0 0.2rem; color: inherit; text-decoration: none; break-inside: avoid; }
+    .vp-frame { position: relative; display: block; width: 72%; margin: 0 auto; border: 1px solid #c9ced6; border-radius: 4px; overflow: hidden; }
+    .vp-frame img { display: block; width: 100%; filter: brightness(0.82); }
+    .vp-play { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(12, 16, 24, 0.82); border: 2px solid #fff; }
+    .vp-play::after { content: ""; position: absolute; left: 25px; top: 18px; border-style: solid; border-width: 14px 0 14px 22px; border-color: transparent transparent transparent #fff; }
+    .vp-cap { display: block; text-align: center; font-size: 0.78rem; color: #2f5bd3; margin-top: 0.3rem; }
+  }
   .lightbox { position: fixed; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; padding: 3rem 1rem 1.5rem; cursor: zoom-out; }
   .lightbox[hidden] { display: none; }
   .lightbox img { max-width: 94vw; max-height: 84vh; object-fit: contain; border-radius: 4px; background: #fff; cursor: default; }
@@ -147,7 +156,7 @@
   </div>
 </section>
 
-<section class="studio-section">
+<section class="studio-section" id="studio">
   <div class="container">
     <h2>ANTS Studio: One Run, End to End</h2>
     <p>
@@ -159,6 +168,10 @@
       <source src="../assets/images/projects/ants/studio/ants_studio_demo.mp4" type="video/mp4">
     </video>
     <p class="studio-video-caption" style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:0">Walkthrough of one policy development run in ANTS Studio (3 min, with narration). The repair frames come from a logged run with four repairs; the Adversary frames from a closed-loop run on the LIBERO simulator (2 attacks, Muse Spark off).</p>
+    <a class="video-print" href="https://alfredowh.github.io/projects/ants.html#studio">
+      <span class="vp-frame"><img src="../assets/images/projects/ants/studio/poster.jpg" alt="ANTS Studio walkthrough video"><span class="vp-play" aria-hidden="true"></span></span>
+      <span class="vp-cap">&#9654; Watch the 3-minute ANTS Studio walkthrough video: alfredowh.github.io/projects/ants.html#studio</span>
+    </a>
     <div class="frame-strip">
       <div class="strip-title">Show once: System 1</div>
       <div class="frame-row">
